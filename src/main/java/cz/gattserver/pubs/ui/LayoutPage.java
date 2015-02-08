@@ -1,15 +1,18 @@
 package cz.gattserver.pubs.ui;
 
+import com.vaadin.server.Page;
+import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.themes.Reindeer;
 
-public class LayoutPage extends VerticalLayout {
+import cz.gattserver.pubs.model.dto.UserDTO;
+
+public class LayoutPage extends BaseLayout {
 
 	private static final long serialVersionUID = -2049981787052398061L;
 
@@ -20,6 +23,22 @@ public class LayoutPage extends VerticalLayout {
 	private Button hospodyBtn;
 	private Button pivaBtn;
 	private Button loginBtn;
+
+	private VaadinRequest request;
+
+	/**
+	 * Získá URL stránky. Kořen webu + suffix
+	 */
+	public String getPageURL(String suffix) {
+		return request.getContextPath() + "/" + suffix;
+	}
+
+	/**
+	 * Přejde na stránku
+	 */
+	public void redirect(String uri) {
+		Page.getCurrent().setLocation(uri);
+	}
 
 	private void selectButton(Button btn) {
 		for (int i = 0; i < menuLayout.getComponentCount(); i++) {
@@ -36,12 +55,13 @@ public class LayoutPage extends VerticalLayout {
 		}
 	}
 
-	public LayoutPage() {
+	public LayoutPage(VaadinRequest request) {
+		this.request = request;
 
 		addStyleName("layout-box");
 		setWidth("1000px");
 		setHeight("100%");
-
+		
 		menuLayout = new HorizontalLayout();
 		menuLayout.setSpacing(true);
 		menuLayout.setMargin(true);
@@ -95,18 +115,34 @@ public class LayoutPage extends VerticalLayout {
 		menuLayout.addComponent(separator);
 		menuLayout.setExpandRatio(separator, 1);
 
-		loginBtn = new Button("Přihlásit", new Button.ClickListener() {
-			private static final long serialVersionUID = 2071604101486581247L;
+		UserDTO user = getPubsUI().getUser();
+		if (user == null) {
+			loginBtn = new Button("Přihlásit", new Button.ClickListener() {
+				private static final long serialVersionUID = 2071604101486581247L;
 
-			@Override
-			public void buttonClick(ClickEvent event) {
-				setContent(new LoginContent(LayoutPage.this));
-				selectButton(loginBtn);
-			}
-		});
-		menuLayout.addComponent(loginBtn);
-		loginBtn.setStyleName(Reindeer.BUTTON_LINK);
-		loginBtn.addStyleName("main-button");
+				@Override
+				public void buttonClick(ClickEvent event) {
+					setContent(new LoginContent(LayoutPage.this));
+					selectButton(loginBtn);
+				}
+			});
+			menuLayout.addComponent(loginBtn);
+			loginBtn.setStyleName(Reindeer.BUTTON_LINK);
+			loginBtn.addStyleName("main-button");
+		} else {
+			Button logOffButton = new Button("Odhlásit uživatele " + user.getName(), new Button.ClickListener() {
+				private static final long serialVersionUID = 5161534666150825952L;
+
+				@Override
+				public void buttonClick(ClickEvent event) {
+					redirect(getPageURL("j_spring_security_logout"));
+				}
+
+			});
+			menuLayout.addComponent(logOffButton);
+			logOffButton.setStyleName(Reindeer.BUTTON_LINK);
+			logOffButton.addStyleName("main-button");
+		}
 
 		setContent(new HomeContent(this));
 	}

@@ -10,9 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 import cz.gattserver.pubs.facades.CommentFacade;
 import cz.gattserver.pubs.facades.SecurityFacade;
 import cz.gattserver.pubs.model.dao.CommentRepository;
+import cz.gattserver.pubs.model.dao.PubRepository;
 import cz.gattserver.pubs.model.domain.Comment;
+import cz.gattserver.pubs.model.domain.Pub;
 import cz.gattserver.pubs.model.domain.User;
 import cz.gattserver.pubs.model.dto.CommentDTO;
+import cz.gattserver.pubs.model.dto.PubDTO;
 import cz.gattserver.pubs.util.MappingService;
 
 @Transactional
@@ -26,6 +29,9 @@ public class CommentFacadeImpl implements CommentFacade {
 	private CommentRepository commentRepository;
 
 	@Autowired
+	private PubRepository pubRepository;
+
+	@Autowired
 	private SecurityFacade securityFacade;
 
 	public List<CommentDTO> findAllComments() {
@@ -33,10 +39,21 @@ public class CommentFacadeImpl implements CommentFacade {
 	}
 
 	@Override
-	public void createComment(CommentDTO commentDTO) {
+	public Long createComment(PubDTO pubDTO, CommentDTO commentDTO) {
 		Comment comment = mapper.map(commentDTO, Comment.class);
 		comment.setCreationDate(Calendar.getInstance().getTime());
 		comment.setAuthor(mapper.map(securityFacade.getCurrentUser(), User.class));
-		commentRepository.save(comment);
+		Long id = commentRepository.save(comment).getId();
+
+		Pub pub = mapper.map(pubDTO, Pub.class);
+		pub.getComments().add(comment);
+		pubRepository.save(pub);
+
+		return id;
+	}
+
+	@Override
+	public CommentDTO findById(Long id) {
+		return mapper.map(commentRepository.findOne(id), CommentDTO.class);
 	}
 }

@@ -28,9 +28,9 @@ public class PubFacadeImpl implements PubFacade {
 	}
 
 	@Override
-	public void createPub(PubDTO pubDTO) {
+	public Long createPub(PubDTO pubDTO) {
 		Pub pub = mapper.map(pubDTO, Pub.class);
 		pub.setCreationDate(Calendar.getInstance().getTime());
-		pubRepository.save(pub);
+		return pubRepository.save(pub).getId();
 	}
 }

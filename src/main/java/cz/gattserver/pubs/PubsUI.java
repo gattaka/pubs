@@ -14,6 +14,7 @@ import com.vaadin.ui.VerticalLayout;
 
 import cz.gattserver.pubs.exception.ApplicationErrorHandler;
 import cz.gattserver.pubs.facades.SecurityFacade;
+import cz.gattserver.pubs.facades.UserFacade;
 import cz.gattserver.pubs.model.dto.UserDTO;
 import cz.gattserver.pubs.ui.LayoutPage;
 
@@ -26,6 +27,9 @@ public class PubsUI extends UI {
 
 	@Autowired
 	private SecurityFacade securityFacade;
+
+	@Autowired
+	private UserFacade userFacade;
 
 	public PubsUI() {
 		SpringContextHelper.inject(this);
@@ -51,9 +55,10 @@ public class PubsUI extends UI {
 		wrapper.setSizeFull();
 		wrapper.setSpacing(true);
 		wrapper.setMargin(true);
-		LayoutPage layoutPage = new LayoutPage();
+		LayoutPage layoutPage = new LayoutPage(request);
 		wrapper.addComponent(layoutPage);
 		wrapper.setComponentAlignment(layoutPage, Alignment.MIDDLE_CENTER);
 
+		// userFacade.registrateNewUser("gattakahynca@seznam.cz", "gattaka", "pubsAdmin1234");
 	}
 }

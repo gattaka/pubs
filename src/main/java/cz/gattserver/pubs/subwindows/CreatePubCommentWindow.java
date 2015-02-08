@@ -22,7 +22,7 @@ public class CreatePubCommentWindow extends BaseWindow {
 	@Autowired
 	private CommentFacade commentFacade;
 
-	public CreatePubCommentWindow(PubDTO p) {
+	public CreatePubCommentWindow(final PubDTO p) {
 		super("Vytvořit komentář k hospodě: " + p.getName());
 
 		BeanFieldGroup<CommentDTO> beanFieldGroup = new BeanFieldGroup<CommentDTO>(CommentDTO.class);
@@ -41,7 +41,8 @@ public class CreatePubCommentWindow extends BaseWindow {
 			public void buttonClick(ClickEvent event) {
 				try {
 					beanFieldGroup.commit();
-					commentFacade.createComment(beanFieldGroup.getItemDataSource().getBean());
+					Long id = commentFacade.createComment(p, beanFieldGroup.getItemDataSource().getBean());
+					onCreation(id);
 					getUI().removeWindow(CreatePubCommentWindow.this);
 				} catch (CommitException e) {
 					e.printStackTrace();
@@ -51,6 +52,9 @@ public class CreatePubCommentWindow extends BaseWindow {
 		addComponent(createBtn);
 		setComponentAlignment(createBtn, Alignment.BOTTOM_RIGHT);
 
+	}
+	
+	protected void onCreation(Long id) {
 	}
 
 	@Override

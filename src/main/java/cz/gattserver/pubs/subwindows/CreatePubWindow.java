@@ -58,7 +58,8 @@ public class CreatePubWindow extends BaseWindow {
 			public void buttonClick(ClickEvent event) {
 				try {
 					beanFieldGroup.commit();
-					pubFacade.createPub(beanFieldGroup.getItemDataSource().getBean());
+					Long id = pubFacade.createPub(beanFieldGroup.getItemDataSource().getBean());
+					onCreation(id);
 					getUI().removeWindow(CreatePubWindow.this);
 				} catch (CommitException e) {
 					e.printStackTrace();
@@ -70,6 +71,9 @@ public class CreatePubWindow extends BaseWindow {
 
 	}
 
+	protected void onCreation(Long id) {
+	}
+	
 	@Override
 	public void close() {
 		getUI().addWindow(new ConfirmWindow("Opravdu zrušit zakládání nové hospody?") {

@@ -23,8 +23,9 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Link;
 import com.vaadin.ui.VerticalLayout;
 
+import cz.gattserver.pubs.facades.CommentFacade;
 import cz.gattserver.pubs.facades.PubFacade;
-import cz.gattserver.pubs.model.domain.Comment;
+import cz.gattserver.pubs.facades.SecurityFacade;
 import cz.gattserver.pubs.model.dto.CommentDTO;
 import cz.gattserver.pubs.model.dto.PubDTO;
 import cz.gattserver.pubs.subwindows.CreatePubCommentWindow;
@@ -36,12 +37,18 @@ public class PubsContent extends Content {
 	private static final long serialVersionUID = -2446097146634308270L;
 
 	@Autowired
+	private SecurityFacade securityFacade;
+
+	@Autowired
 	private PubFacade pubFacade;
+	
+	@Autowired
+	private CommentFacade commentFacade;
 
 	private final FilterTable table = new FilterTable();
 	private BeanContainer<Long, PubDTO> container;
 
-	private HorizontalLayout pubLayout;
+	private VerticalLayout pubAndCommentsLayout;
 
 	private void populateContainer() {
 		container.removeAllItems();
@@ -54,7 +61,11 @@ public class PubsContent extends Content {
 	}
 
 	private void showPubDetail(PubDTO p) {
-		pubLayout.removeAllComponents();
+		pubAndCommentsLayout.removeAllComponents();
+
+		HorizontalLayout pubLayout = new HorizontalLayout();
+		pubLayout.setSpacing(true);
+		pubAndCommentsLayout.addComponent(pubLayout);
 
 		// TODO z DB
 		Embedded pubImage = new Embedded(null, new ThemeResource("img/no_foto.png"));
@@ -103,25 +114,31 @@ public class PubsContent extends Content {
 		// HorizontalLayout comments = new HorizontalLayout();
 		// comments.setSpacing(true);
 
-		Button createBtn = new Button("Přidat komentář", new Button.ClickListener() {
-			private static final long serialVersionUID = 2071604101486581247L;
+		if (securityFacade.getCurrentUser() != null) { 
+			Button createBtn = new Button("Přidat komentář", new Button.ClickListener() {
+				private static final long serialVersionUID = 2071604101486581247L;
 
-			@Override
-			public void buttonClick(ClickEvent event) {
-				getUI().addWindow(new CreatePubCommentWindow(p));
-			}
-		});
-		createBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/tags/plus_16.png"));
-		pubDetails.addComponent(createBtn);
-		
+				@Override
+				public void buttonClick(ClickEvent event) {
+					getUI().addWindow(new CreatePubCommentWindow(p) {
+						@Override
+						protected void onCreation(Long id) {
+							CommentDTO commentDTO = commentFacade.findById(id);
+						}
+					});
+				}
+			});
+			createBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/tags/plus_16.png"));
+			pubAndCommentsLayout.addComponent(createBtn);
+		}
+
 		for (CommentDTO c : p.getComments()) {
 			Label comment = new Label(c.getText());
 			comment.setWidth(null);
 			comment.setCaption(c.getAuthor().getName() + " " + "(" + dateFormat.format(c.getCreationDate()) + ")");
-			pubDetails.addComponent(comment);
+			pubAndCommentsLayout.addComponent(comment);
 		}
-		
-		
+
 	}
 
 	private Component createWebAddressLink(PubDTO p) {
@@ -214,24 +231,26 @@ public class PubsContent extends Content {
 		setComponentAlignment(menu, Alignment.TOP_CENTER);
 		menu.setWidth("100%");
 
-		Button createBtn = new Button("Založit novou hospodu", new Button.ClickListener() {
-			private static final long serialVersionUID = 2071604101486581247L;
+		if (securityFacade.getCurrentUser() != null) {
+			Button createBtn = new Button("Založit novou hospodu", new Button.ClickListener() {
+				private static final long serialVersionUID = 2071604101486581247L;
 
-			@Override
-			public void buttonClick(ClickEvent event) {
-				getUI().addWindow(new CreatePubWindow());
-			}
-		});
-		createBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/tags/plus_16.png"));
-		menu.addComponent(createBtn);
+				@Override
+				public void buttonClick(ClickEvent event) {
+					getUI().addWindow(new CreatePubWindow());
+				}
+			});
+			createBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/tags/plus_16.png"));
+			menu.addComponent(createBtn);
+		}
 
 		// separator
 		addComponent(new Label());
 
-		pubLayout = new HorizontalLayout();
-		pubLayout.setSpacing(true);
-		addComponent(pubLayout);
-		pubLayout.setWidth("100%");
+		pubAndCommentsLayout = new VerticalLayout();
+		pubAndCommentsLayout.setSpacing(true);
+		addComponent(pubAndCommentsLayout);
+		pubAndCommentsLayout.setWidth("100%");
 
 	}
 }

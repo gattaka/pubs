@@ -8,5 +8,5 @@ public interface PubFacade {
 
 	public List<PubDTO> findAllPubs();
 	
-	public void createPub(PubDTO pubDTO);
+	public Long createPub(PubDTO pubDTO);
 }
