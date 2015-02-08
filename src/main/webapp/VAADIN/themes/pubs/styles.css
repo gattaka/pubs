@@ -1,0 +1,74 @@
+/* Vychazim existujiciho theme Vaadin */
+@import "../reindeer/legacy-styles.css";
+
+.error-text-field {
+	opacity: 1;
+	filter: alpha(opacity = 80);
+	cursor: default;
+}
+
+.error-layout {
+	border: 3px solid red;
+}
+
+.layout-box {
+	border: 2px solid #DFB67A;
+	margin: auto 0px;
+	background-color: #FFF3DA;
+}
+
+.v-button .v-icon {
+	padding-bottom: 1px;
+}
+
+.main-button>.v-button-wrap>.v-button-caption, .main-button-selected>.v-button-wrap>.v-button-caption
+	{
+	font-weight: bold;
+	text-decoration: none;
+	padding: 10px;
+}
+
+.main-button>.v-button-wrap>.v-button-caption {
+	font-size: 15px;
+	color: #7F5000;
+	text-shadow: 1px 1px 8px #9E6D00;
+}
+
+.main-button-selected>.v-button-wrap>.v-button-caption {
+	font-size: 16px;
+	color: #FFBB00;
+	text-shadow: 1px 1px 8px #2A1E02;
+}
+
+.main-button>.v-button-wrap>.v-button-caption:hover {
+	color: #FFE2B1;
+}
+
+.main-menu {
+	background-color: #EEB36C;
+}
+
+div.v-slot.v-slot-link.v-slot-user_status.v-slot-menu-item {
+	padding-top: 3px;
+}
+
+div.v-slot.v-slot-link.v-slot-menu-item {
+	padding-top: 3px;
+}
+
+.v-ui {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	background: url("img/bgr2.jpg");
+	background-repeat: repeat;
+}
+
+.v-captiontext {
+	font-weight: bold;
+}
+
+.pub-name {
+	font-weight: bold;
+	font-size: 20px;
+}
