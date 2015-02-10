@@ -56,6 +56,8 @@ public class PubsContent extends Content {
 	private VerticalLayout pubAndCommentsLayout;
 	private VerticalLayout commentsLayout;
 
+	private Button editBtn;
+
 	private void populateContainer() {
 		container.removeAllItems();
 		container.addAll(pubFacade.findAllPubs());
@@ -105,12 +107,13 @@ public class PubsContent extends Content {
 		Component webAddressLink = createWebAddressLink(p);
 		pubDetails.addComponent(webAddressLink);
 
-		SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
-
-		Label lastVisitLabel = new Label(p.getLastVisit() == null ? "Zatím nenavštíveno" : dateFormat.format(p
-				.getLastVisit()));
-		lastVisitLabel.setCaption("Poslední návštěva");
-		pubDetails.addComponent(lastVisitLabel);
+		// Tohle asi nakonec nemá moc víznam, protože když se zapomene ten sraz zrušit a pak se půjde někam jinam
+		// apod... je to takové zbytečné -- dá se to zjistit z přehledu
+		// SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+		// Label lastVisitLabel = new Label(p.getLastVisit() == null ? "Zatím nenavštíveno" : dateFormat.format(p
+		// .getLastVisit()));
+		// lastVisitLabel.setCaption("Poslední návštěva");
+		// pubDetails.addComponent(lastVisitLabel);
 
 		Label detailsLabel = new Label(p.getDescription());
 		detailsLabel.setCaption("Popis hospody");
@@ -127,9 +130,9 @@ public class PubsContent extends Content {
 
 						@Override
 						protected void onCreation(Long id) {
-							CommentDTO c = commentFacade.findById(id);
+							CommentDTO c = commentFacade.getById(id);
 							p.getComments().add(c);
-							addComment(c);
+							addComment(c, p);
 						}
 					});
 				}
@@ -143,23 +146,64 @@ public class PubsContent extends Content {
 		pubAndCommentsLayout.addComponent(commentsLayout);
 
 		for (CommentDTO c : p.getComments()) {
-			addComment(c);
+			addComment(c, p);
 		}
 
 	}
 
-	private void addComment(CommentDTO c) {
+	private Panel createCommentPanel(CommentDTO c) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 		Label comment = new Label(c.getText());
 		Panel panel = new Panel();
-		panel.setCaption(c.getAuthor().getName() + " " + "(" + dateFormat.format(c.getCreationDate()) + ")");
+		String upravenoPart = c.getModificationDate() != null ? "upraveno: "
+				+ dateFormat.format(c.getModificationDate()) + " " : "";
+		panel.setCaption(c.getAuthor().getName() + " " + "(" + upravenoPart + "přidáno: "
+				+ dateFormat.format(c.getCreationDate()) + ")");
 		panel.setContent(comment);
-		commentsLayout.addComponentAsFirst(panel);
+		return panel;
+	}
+
+	private void addComment(CommentDTO c, final PubDTO p) {
+		HorizontalLayout commentLineLayout = new HorizontalLayout();
+		commentLineLayout.setSpacing(true);
+
+		// musí být v panelu, aby se mohl roztahovat i dolů
+		final Panel commentPanel = createCommentPanel(c);
+		commentLineLayout.addComponent(commentPanel);
+
+		// jde o můj komentář?
+		if (c.getAuthor().equals(securityFacade.getCurrentUser())) {
+			Button editBtn = new Button("Upravit komentář", new Button.ClickListener() {
+				private static final long serialVersionUID = 2071604101486581247L;
+
+				@Override
+				public void buttonClick(ClickEvent event) {
+					getUI().addWindow(new CreatePubCommentWindow(p, c) {
+						private static final long serialVersionUID = -452606461049128450L;
+
+						@Override
+						protected void onCreation(Long id) {
+							CommentDTO updatedComment = commentFacade.getById(id);
+							commentLineLayout.replaceComponent(commentPanel, createCommentPanel(updatedComment));
+						}
+					});
+				}
+			});
+			editBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/tags/pencil_16.png"));
+			commentLineLayout.addComponent(editBtn);
+			commentLineLayout.setComponentAlignment(editBtn, Alignment.BOTTOM_RIGHT);
+		}
+
+		commentLineLayout.setExpandRatio(commentPanel, 1);
+		commentLineLayout.setWidth("100%");
+		commentsLayout.addComponentAsFirst(commentLineLayout);
 	}
 
 	private Component createWebAddressLink(PubDTO p) {
 		if (p.getWebAddress() != null) {
-			return new Link(p.getWebAddress(), new ExternalResource(p.getWebAddress()));
+			Link link = new Link(p.getWebAddress(), new ExternalResource(p.getWebAddress()));
+			link.setTargetName("_blank");
+			return link;
 		} else {
 			return new Label("Nemá webové stránky");
 		}
@@ -222,24 +266,27 @@ public class PubsContent extends Content {
 		table.setWidth("100%");
 
 		table.setFilterBarVisible(true);
-		// table.setFilterDecorator(new GrassFilterDecorator());
 		table.addValueChangeListener(new ValueChangeListener() {
 			private static final long serialVersionUID = 1187013531601185692L;
 
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-				if (table.getValue() != null) {
+				boolean selected = table.getValue() != null;
+				if (selected) {
 					@SuppressWarnings("unchecked")
 					BeanItem<PubDTO> item = (BeanItem<PubDTO>) table.getItem(table.getValue());
 					showPubDetail(item.getBean());
 					layoutPage.getWebRequest().updateURL(CONTENT_PATH + "/" + item.getBean().getName());
 				}
+				if (editBtn != null)
+					editBtn.setEnabled(selected);
 			}
 		});
 
 		URLPathAnalyzer analyzer = layoutPage.getWebRequest().getAnalyzer();
 
 		addComponent(table);
+		sortTable();
 
 		HorizontalLayout menu = new HorizontalLayout();
 		menu.setSpacing(true);
@@ -248,6 +295,10 @@ public class PubsContent extends Content {
 		menu.setWidth("100%");
 
 		if (securityFacade.getCurrentUser() != null) {
+			HorizontalLayout btnLayout = new HorizontalLayout();
+			btnLayout.setSpacing(true);
+			menu.addComponent(btnLayout);
+
 			Button createBtn = new Button("Založit novou hospodu", new Button.ClickListener() {
 				private static final long serialVersionUID = 2071604101486581247L;
 
@@ -258,7 +309,7 @@ public class PubsContent extends Content {
 
 						@Override
 						protected void onCreation(Long id) {
-							PubDTO newPub = pubFacade.findById(id);
+							PubDTO newPub = pubFacade.getById(id);
 							container.addBean(newPub);
 							sortTable();
 						}
@@ -266,7 +317,33 @@ public class PubsContent extends Content {
 				}
 			});
 			createBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/tags/plus_16.png"));
-			menu.addComponent(createBtn);
+			btnLayout.addComponent(createBtn);
+
+			editBtn = new Button("Uprav hospodu", new Button.ClickListener() {
+				private static final long serialVersionUID = 2071604101486581247L;
+
+				@Override
+				public void buttonClick(ClickEvent event) {
+					@SuppressWarnings("unchecked")
+					BeanItem<PubDTO> beanItem = (BeanItem<PubDTO>) table.getItem(table.getValue());
+					PubDTO item = beanItem.getBean();
+					getUI().addWindow(new CreatePubWindow(item) {
+						private static final long serialVersionUID = -7533537841540613862L;
+
+						@Override
+						protected void onCreation(Long id) {
+							PubDTO newPub = pubFacade.getById(id);
+							container.removeItem(beanItem);
+							container.addBean(newPub);
+							showPubDetail(newPub);
+							sortTable();
+						}
+					});
+				}
+			});
+			editBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/tags/pencil_16.png"));
+			editBtn.setEnabled(false);
+			btnLayout.addComponent(editBtn);
 		}
 
 		// separator
@@ -280,7 +357,7 @@ public class PubsContent extends Content {
 		// pokud nebyla cesta prázná, pak proveď posuv
 		if (analyzer.getCurrentPathToken() != null) {
 			String pubName = analyzer.getCurrentPathToken();
-			PubDTO pubDTO = pubFacade.findByName(pubName);
+			PubDTO pubDTO = pubFacade.getByName(pubName);
 			if (pubDTO != null)
 				table.select(pubDTO.getId());
 			analyzer.shift();

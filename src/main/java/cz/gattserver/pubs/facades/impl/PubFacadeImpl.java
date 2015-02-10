@@ -35,12 +35,12 @@ public class PubFacadeImpl implements PubFacade {
 	}
 
 	@Override
-	public PubDTO findById(Long id) {
+	public PubDTO getById(Long id) {
 		return mapper.map(pubRepository.findOne(id), PubDTO.class);
 	}
 
 	@Override
-	public PubDTO findByName(String pubName) {
+	public PubDTO getByName(String pubName) {
 		return mapper.map(pubRepository.findByName(pubName), PubDTO.class);
 	}
 }

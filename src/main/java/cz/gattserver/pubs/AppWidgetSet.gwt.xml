@@ -42,4 +42,6 @@
     <inherits name="org.tepi.filtertable.gwt.FilterTableWidgetset" />
 
     <inherits name="com.wcs.wcslib.vaadin.widget.multifileupload.MultiFileUploadWidgetSet" />
+
+    <inherits name="org.vaadin.teemu.ratingstars.gwt.RatingStarsWidgetset" />
 </module>

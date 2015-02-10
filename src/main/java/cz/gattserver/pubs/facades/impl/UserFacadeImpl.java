@@ -113,4 +113,9 @@ public class UserFacadeImpl implements UserFacade {
 		return null;
 	}
 
+	@Override
+	public List<UserDTO> getAllUsers() {
+		return mapper.map(userRepository.findAll(), UserDTO.class);
+	}
+
 }

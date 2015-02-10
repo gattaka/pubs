@@ -71,4 +71,11 @@ public interface UserFacade {
 	 */
 	public UserDTO getUser(String username);
 
+	/**
+	 * Vrátí všechny uživatele
+	 * 
+	 * @return
+	 */
+	public List<UserDTO> getAllUsers();
+
 }

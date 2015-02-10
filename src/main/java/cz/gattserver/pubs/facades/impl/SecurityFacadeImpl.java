@@ -18,6 +18,8 @@ import cz.gattserver.pubs.model.dto.UserDTO;
 @Component
 public class SecurityFacadeImpl implements SecurityFacade {
 
+	private static final long serialVersionUID = 4405364846180362419L;
+
 	@Autowired
 	private UserFacade userFacade;
 

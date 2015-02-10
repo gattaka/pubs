@@ -18,6 +18,11 @@ public class CommentDTO implements Serializable {
 	private Date creationDate;
 
 	/**
+	 * Kdy byl upraven
+	 */
+	private Date modificationDate;
+
+	/**
 	 * Autor
 	 */
 	private UserDTO author;
@@ -26,6 +31,14 @@ public class CommentDTO implements Serializable {
 	 * Obsah komentáře
 	 */
 	private String text;
+
+	public Date getModificationDate() {
+		return modificationDate;
+	}
+
+	public void setModificationDate(Date modificationDate) {
+		this.modificationDate = modificationDate;
+	}
 
 	public Long getId() {
 		return id;

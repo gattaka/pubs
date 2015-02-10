@@ -34,7 +34,7 @@ public class CommentFacadeImpl implements CommentFacade {
 	@Autowired
 	private SecurityFacade securityFacade;
 
-	public List<CommentDTO> findAllComments() {
+	public List<CommentDTO> getAllComments() {
 		return mapper.map(commentRepository.findAll(), CommentDTO.class);
 	}
 
@@ -53,7 +53,15 @@ public class CommentFacadeImpl implements CommentFacade {
 	}
 
 	@Override
-	public CommentDTO findById(Long id) {
+	public CommentDTO getById(Long id) {
 		return mapper.map(commentRepository.findOne(id), CommentDTO.class);
+	}
+
+	@Override
+	public Long updateComment(CommentDTO commentDTO) {
+		Comment comment = mapper.map(commentDTO, Comment.class);
+		comment.setModificationDate(Calendar.getInstance().getTime());
+		Long id = commentRepository.save(comment).getId();
+		return id;
 	}
 }

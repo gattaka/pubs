@@ -22,6 +22,32 @@
 	padding-bottom: 1px;
 }
 
+.v-ratingstars-star {
+	background: none !important;
+	width: 27px !important;
+	height: 36px !important;
+}
+
+.v-ratingstars {
+	background: none !important;
+}
+
+.v-ratingstars-bar {
+	background-image: url("img/unetice_rank.png") !important;
+	/* 	width: 27px !important; */
+	height: 36px !important;
+	border: none !important;
+	left: 0px !important;
+}
+
+.v-ratingstars-wrapper {
+	border: none !important;
+	background-image: url("img/unetice_rank_grey.png") !important;
+	background-position: top left !important;
+	background-repeat: repeat-x !important;
+	padding: 0px !important;
+}
+
 .main-button>.v-button-wrap>.v-button-caption, .main-button-selected>.v-button-wrap>.v-button-caption
 	{
 	font-weight: bold;

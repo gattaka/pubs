@@ -4,14 +4,18 @@ import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.vaadin.teemu.ratingstars.RatingStars;
 
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
+import com.vaadin.event.LayoutEvents;
+import com.vaadin.server.ThemeResource;
+import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.themes.Reindeer;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
-import com.vaadin.ui.DateField;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
@@ -30,10 +34,14 @@ public class CreatePubWindow extends WebWindow {
 	private PubFacade pubFacade;
 
 	public CreatePubWindow() {
-		super("Založit novou hospodu");
+		this(new PubDTO());
+	}
+
+	public CreatePubWindow(PubDTO p) {
+		super("Hospoda");
 
 		BeanFieldGroup<PubDTO> beanFieldGroup = new BeanFieldGroup<PubDTO>(PubDTO.class);
-		beanFieldGroup.setItemDataSource(new PubDTO());
+		beanFieldGroup.setItemDataSource(p);
 
 		TextField nameField = new TextField("Název hospody");
 		nameField.setNullRepresentation("");
@@ -55,12 +63,39 @@ public class CreatePubWindow extends WebWindow {
 		beanFieldGroup.bind(rankBox, "rank");
 		rankBox.setValue(3);
 
-		DateField lastVisitField = new DateField("Naposledy navštíveno");
-		beanFieldGroup.bind(lastVisitField, "lastVisit");
+		// DateField lastVisitField = new DateField("Naposledy navštíveno");
+		// beanFieldGroup.bind(lastVisitField, "lastVisit");
 
-		HorizontalLayout rankAndVisitLayout = new HorizontalLayout(rankBox, lastVisitField);
-		rankAndVisitLayout.setSpacing(true);
-		addComponent(rankAndVisitLayout);
+		// HorizontalLayout rankAndVisitLayout = new HorizontalLayout(rankBox, lastVisitField);
+		// rankAndVisitLayout.setSpacing(true);
+		// addComponent(rankAndVisitLayout);
+
+		// final int RANK_BUTTONS_COUNT = 5;
+		// HorizontalLayout rankLayout = new HorizontalLayout();
+		// rankLayout.setSpacing(true);
+		// Button[] rankButtons = new Button[RANK_BUTTONS_COUNT];
+		//
+		// for (int i = 0; i < RANK_BUTTONS_COUNT; i++) {
+		// Button rankButton = new Button("", new Button.ClickListener() {
+		// private static final long serialVersionUID = 2071604101486581247L;
+		//
+		// @Override
+		// public void buttonClick(ClickEvent event) {
+		// }
+		// });
+		// rankButton.addListener(Mouse., target, method);
+		// rankLayout.addComponent(rankButton);
+		// rankButton.setImmediate(true);
+		// rankButton.setStyleName(Reindeer.BUTTON_LINK);
+		// rankButton.addStyleName("rank-button");
+		// rankButton.setIcon((com.vaadin.server.Resource) new ThemeResource("img/unetice_rank.png"));
+		// rankButtons[i] = rankButton;
+		// }
+		// addComponent(rankLayout);
+
+		RatingStars ratingStars = new RatingStars();
+		ratingStars.setAnimated(false);
+		addComponent(ratingStars);
 
 		TextArea descriptionField = new TextArea("Popis");
 		descriptionField.setWidth("400px");
@@ -69,7 +104,7 @@ public class CreatePubWindow extends WebWindow {
 		beanFieldGroup.bind(descriptionField, "description");
 		addComponent(descriptionField);
 
-		Button createBtn = new Button("Založit", new Button.ClickListener() {
+		Button createBtn = new Button("Uložit", new Button.ClickListener() {
 			private static final long serialVersionUID = 2071604101486581247L;
 
 			@Override
@@ -105,7 +140,7 @@ public class CreatePubWindow extends WebWindow {
 
 	@Override
 	public void close() {
-		getUI().addWindow(new ConfirmWindow("Opravdu zrušit zakládání nové hospody?") {
+		getUI().addWindow(new ConfirmWindow("Opravdu zrušit zakládání/úpravu nové hospody?") {
 			private static final long serialVersionUID = -1263084559774811237L;
 
 			@Override

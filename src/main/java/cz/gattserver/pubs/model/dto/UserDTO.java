@@ -111,4 +111,23 @@ public class UserDTO implements UserDetails {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return name;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof UserDTO) {
+			UserDTO p2 = (UserDTO) obj;
+			return id.equals(p2.getId());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return id.hashCode();
+	}
+
 }

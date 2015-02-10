@@ -3,7 +3,6 @@ package cz.gattserver.pubs.model.domain;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -14,10 +13,10 @@ import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name = "COMMENTS")
-public class Comment implements Serializable {
+@Table(name = "VISIT")
+public class Visit implements Serializable {
 
-	private static final long serialVersionUID = 1370519912799856102L;
+	private static final long serialVersionUID = -5014976320658298578L;
 
 	/**
 	 * DB identifikátor
@@ -28,14 +27,9 @@ public class Comment implements Serializable {
 	private Long id;
 
 	/**
-	 * Kdy byl vytvořen
+	 * Kdy
 	 */
-	private Date creationDate;
-
-	/**
-	 * Kdy byl upraven
-	 */
-	private Date modificationDate;
+	private Date date;
 
 	/**
 	 * Autor
@@ -44,18 +38,10 @@ public class Comment implements Serializable {
 	private User author;
 
 	/**
-	 * Obsah komentáře
+	 * Místo
 	 */
-	@Column(columnDefinition = "TEXT")
-	private String text;
-
-	public Date getModificationDate() {
-		return modificationDate;
-	}
-
-	public void setModificationDate(Date modificationDate) {
-		this.modificationDate = modificationDate;
-	}
+	@ManyToOne(fetch = FetchType.EAGER)
+	private Pub pub;
 
 	public Long getId() {
 		return id;
@@ -65,12 +51,12 @@ public class Comment implements Serializable {
 		this.id = id;
 	}
 
-	public Date getCreationDate() {
-		return creationDate;
+	public Date getDate() {
+		return date;
 	}
 
-	public void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
+	public void setDate(Date date) {
+		this.date = date;
 	}
 
 	public User getAuthor() {
@@ -81,12 +67,12 @@ public class Comment implements Serializable {
 		this.author = author;
 	}
 
-	public String getText() {
-		return text;
+	public Pub getPub() {
+		return pub;
 	}
 
-	public void setText(String text) {
-		this.text = text;
+	public void setPub(Pub pub) {
+		this.pub = pub;
 	}
 
 }

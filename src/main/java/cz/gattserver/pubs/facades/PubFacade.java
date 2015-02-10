@@ -10,7 +10,7 @@ public interface PubFacade {
 
 	public Long createPub(PubDTO pubDTO);
 
-	public PubDTO findById(Long id);
+	public PubDTO getById(Long id);
 
-	public PubDTO findByName(String pubName);
+	public PubDTO getByName(String pubName);
 }

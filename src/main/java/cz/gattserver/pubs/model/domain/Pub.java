@@ -12,11 +12,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name = "PUBS")
+@Table(name = "PUBS", uniqueConstraints = { @UniqueConstraint(columnNames = { "name" }) })
 public class Pub implements Serializable {
 
 	private static final long serialVersionUID = 1370519912799856102L;

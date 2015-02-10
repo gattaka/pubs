@@ -7,9 +7,11 @@ import cz.gattserver.pubs.model.dto.PubDTO;
 
 public interface CommentFacade {
 
-	public List<CommentDTO> findAllComments();
+	public List<CommentDTO> getAllComments();
 
 	public Long createComment(PubDTO pubDTO, CommentDTO commentDTO);
 
-	public CommentDTO findById(Long id);
+	public CommentDTO getById(Long id);
+
+	public Long updateComment(CommentDTO comment);
 }

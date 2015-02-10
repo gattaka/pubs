@@ -1,5 +1,8 @@
 package cz.gattserver.pubs.subwindows;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,10 +28,14 @@ public class CreatePubCommentWindow extends WebWindow {
 	private CommentFacade commentFacade;
 
 	public CreatePubCommentWindow(final PubDTO p) {
-		super("Vytvořit komentář k hospodě: " + p.getName());
+		this(p, new CommentDTO());
+	}
+
+	public CreatePubCommentWindow(final PubDTO p, CommentDTO commentBean) {
+		super("Komentář k hospodě: " + p.getName());
 
 		BeanFieldGroup<CommentDTO> beanFieldGroup = new BeanFieldGroup<CommentDTO>(CommentDTO.class);
-		beanFieldGroup.setItemDataSource(new CommentDTO());
+		beanFieldGroup.setItemDataSource(commentBean);
 
 		final TextArea commentField = new TextArea("Komentář");
 		commentField.setNullRepresentation("");
@@ -37,7 +44,7 @@ public class CreatePubCommentWindow extends WebWindow {
 		beanFieldGroup.bind(commentField, "text");
 		addComponent(commentField);
 
-		Button createBtn = new Button("Přidat", new Button.ClickListener() {
+		Button createBtn = new Button("Uložit", new Button.ClickListener() {
 			private static final long serialVersionUID = 2071604101486581247L;
 
 			@Override
@@ -50,7 +57,13 @@ public class CreatePubCommentWindow extends WebWindow {
 						return;
 					}
 
-					Long id = commentFacade.createComment(p, beanFieldGroup.getItemDataSource().getBean());
+					CommentDTO comment = beanFieldGroup.getItemDataSource().getBean();
+					Long id;
+					if (comment.getId() != null) {
+						id = commentFacade.updateComment(comment);
+					} else {
+						id = commentFacade.createComment(p, comment);
+					}
 					onCreation(id);
 					getUI().removeWindow(CreatePubCommentWindow.this);
 				} catch (CommitException e) {
@@ -68,7 +81,7 @@ public class CreatePubCommentWindow extends WebWindow {
 
 	@Override
 	public void close() {
-		getUI().addWindow(new ConfirmWindow("Opravdu zrušit přidání nového komentáře?") {
+		getUI().addWindow(new ConfirmWindow("Opravdu zrušit přidání/úpravu komentáře?") {
 			private static final long serialVersionUID = -1263084559774811237L;
 
 			@Override

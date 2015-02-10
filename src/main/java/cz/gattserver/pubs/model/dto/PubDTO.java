@@ -124,5 +124,24 @@ public class PubDTO implements Serializable {
 	public void setComments(List<CommentDTO> comments) {
 		this.comments = comments;
 	}
+	
+	@Override
+	public String toString() {
+		return name;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof PubDTO) {
+			PubDTO p2 = (PubDTO) obj;
+			return id.equals(p2.getId());
+		}
+		return false;
+	}
 
+	@Override
+	public int hashCode() {
+		return id.hashCode();
+	}
+	
 }
