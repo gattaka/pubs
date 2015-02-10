@@ -1,39 +1,32 @@
 package cz.gattserver.pubs;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Alignment;
-import com.vaadin.ui.UI;
+import com.vaadin.ui.Layout;
 import com.vaadin.ui.VerticalLayout;
 
-import cz.gattserver.pubs.exception.ApplicationErrorHandler;
 import cz.gattserver.pubs.facades.SecurityFacade;
 import cz.gattserver.pubs.facades.UserFacade;
 import cz.gattserver.pubs.model.dto.UserDTO;
 import cz.gattserver.pubs.ui.LayoutPage;
+import cz.gattserver.web.common.ui.PageState;
+import cz.gattserver.web.common.ui.WebRequest;
+import cz.gattserver.web.common.ui.WebUI;
 
 @Title("Pubs")
 @Theme("pubs")
-public class PubsUI extends UI {
+public class PubsUI extends WebUI {
 
 	private static final long serialVersionUID = -785347532002801786L;
-	private static Logger logger = LoggerFactory.getLogger(PubsUI.class);
 
 	@Autowired
 	private SecurityFacade securityFacade;
 
 	@Autowired
 	private UserFacade userFacade;
-
-	public PubsUI() {
-		SpringContextHelper.inject(this);
-	}
 
 	/**
 	 * Získá aktuálního přihlášeného uživatele jako {@link UserDTO} objekt
@@ -46,19 +39,25 @@ public class PubsUI extends UI {
 		return securityFacade.login(username, password);
 	}
 
-	public void init(VaadinRequest request) {
+	@Override
+	protected void showError(PageState state) {
+		// TODO Auto-generated method stub
+	}
 
-		VaadinSession.getCurrent().setErrorHandler(new ApplicationErrorHandler());
+	@Override
+	protected Layout createPageByPath(String path, WebRequest webRequest) {
 
 		VerticalLayout wrapper = new VerticalLayout();
 		setContent(wrapper);
 		wrapper.setSizeFull();
 		wrapper.setSpacing(true);
 		wrapper.setMargin(true);
-		LayoutPage layoutPage = new LayoutPage(request);
+		LayoutPage layoutPage = new LayoutPage(webRequest, path);
 		wrapper.addComponent(layoutPage);
-		wrapper.setComponentAlignment(layoutPage, Alignment.MIDDLE_CENTER);
+		wrapper.setComponentAlignment(layoutPage, Alignment.TOP_CENTER);
 
-		// userFacade.registrateNewUser("gattakahynca@seznam.cz", "gattaka", "pubsAdmin1234");
+		// userFacade.registrateNewUser("gattakahynca@seznam.cz", "marcelgroup", "_uterkyMarcel_");
+
+		return wrapper;
 	}
 }

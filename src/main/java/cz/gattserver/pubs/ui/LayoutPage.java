@@ -1,7 +1,5 @@
 package cz.gattserver.pubs.ui;
 
-import com.vaadin.server.Page;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
@@ -11,6 +9,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.themes.Reindeer;
 
 import cz.gattserver.pubs.model.dto.UserDTO;
+import cz.gattserver.web.common.ui.WebRequest;
 
 public class LayoutPage extends BaseLayout {
 
@@ -20,24 +19,14 @@ public class LayoutPage extends BaseLayout {
 	private HorizontalLayout menuLayout;
 
 	private Button homeBtn;
-	private Button hospodyBtn;
-	private Button pivaBtn;
+	private Button pubsBtn;
+	private Button beerBtn;
 	private Button loginBtn;
 
-	private VaadinRequest request;
+	private WebRequest webRequest;
 
-	/**
-	 * Získá URL stránky. Kořen webu + suffix
-	 */
-	public String getPageURL(String suffix) {
-		return request.getContextPath() + "/" + suffix;
-	}
-
-	/**
-	 * Přejde na stránku
-	 */
-	public void redirect(String uri) {
-		Page.getCurrent().setLocation(uri);
+	public WebRequest getWebRequest() {
+		return webRequest;
 	}
 
 	private void selectButton(Button btn) {
@@ -55,13 +44,13 @@ public class LayoutPage extends BaseLayout {
 		}
 	}
 
-	public LayoutPage(VaadinRequest request) {
-		this.request = request;
+	public LayoutPage(WebRequest request, String path) {
+		this.webRequest = request;
 
 		addStyleName("layout-box");
 		setWidth("1000px");
-		setHeight("100%");
-		
+		// setHeight("100%");
+
 		menuLayout = new HorizontalLayout();
 		menuLayout.setSpacing(true);
 		menuLayout.setMargin(true);
@@ -75,8 +64,7 @@ public class LayoutPage extends BaseLayout {
 
 			@Override
 			public void buttonClick(ClickEvent event) {
-				setContent(new HomeContent(LayoutPage.this));
-				selectButton(homeBtn);
+				insertHomeContent();
 			}
 		});
 		menuLayout.addComponent(homeBtn);
@@ -84,32 +72,30 @@ public class LayoutPage extends BaseLayout {
 		homeBtn.setStyleName(Reindeer.BUTTON_LINK);
 		homeBtn.addStyleName("main-button");
 
-		hospodyBtn = new Button("Hospody", new Button.ClickListener() {
+		pubsBtn = new Button("Hospody", new Button.ClickListener() {
 			private static final long serialVersionUID = 2071604101486581247L;
 
 			@Override
 			public void buttonClick(ClickEvent event) {
-				setContent(new PubsContent(LayoutPage.this));
-				selectButton(hospodyBtn);
+				insertPubsContent();
 			}
 		});
-		menuLayout.addComponent(hospodyBtn);
-		hospodyBtn.setImmediate(true);
-		hospodyBtn.setStyleName(Reindeer.BUTTON_LINK);
-		hospodyBtn.addStyleName("main-button");
+		menuLayout.addComponent(pubsBtn);
+		pubsBtn.setImmediate(true);
+		pubsBtn.setStyleName(Reindeer.BUTTON_LINK);
+		pubsBtn.addStyleName("main-button");
 
-		pivaBtn = new Button("Piva", new Button.ClickListener() {
+		beerBtn = new Button("Piva", new Button.ClickListener() {
 			private static final long serialVersionUID = 2071604101486581247L;
 
 			@Override
 			public void buttonClick(ClickEvent event) {
-				setContent(new HomeContent(LayoutPage.this));
-				selectButton(pivaBtn);
+				insertBeerContent();
 			}
 		});
-		menuLayout.addComponent(pivaBtn);
-		pivaBtn.setStyleName(Reindeer.BUTTON_LINK);
-		pivaBtn.addStyleName("main-button");
+		menuLayout.addComponent(beerBtn);
+		beerBtn.setStyleName(Reindeer.BUTTON_LINK);
+		beerBtn.addStyleName("main-button");
 
 		Label separator = new Label();
 		menuLayout.addComponent(separator);
@@ -135,7 +121,7 @@ public class LayoutPage extends BaseLayout {
 
 				@Override
 				public void buttonClick(ClickEvent event) {
-					redirect(getPageURL("j_spring_security_logout"));
+					webRequest.redirectToPage("j_spring_security_logout");
 				}
 
 			});
@@ -144,7 +130,41 @@ public class LayoutPage extends BaseLayout {
 			logOffButton.addStyleName("main-button");
 		}
 
-		setContent(new HomeContent(this));
+		// Navigace přes bookmarkable URL
+		if (path == null)
+			path = "";
+		switch (path) {
+		case PubsContent.CONTENT_PATH:
+			insertPubsContent();
+			break;
+		case BeerContent.CONTENT_PATH:
+			insertBeerContent();
+			break;
+		case HomeContent.CONTENT_PATH:
+		default:
+			insertHomeContent();
+			break;
+		}
+	}
+
+	private void insertPubsContent() {
+		// musí být první, aby se dal přepsat konkrétní položkou
+		webRequest.updateURL(PubsContent.CONTENT_PATH);
+		setContent(new PubsContent(LayoutPage.this));
+		selectButton(pubsBtn);
+	}
+
+	private void insertBeerContent() {
+		// musí být první, aby se dal přepsat konkrétní položkou
+		webRequest.updateURL(BeerContent.CONTENT_PATH);
+		setContent(new BeerContent(LayoutPage.this));
+		selectButton(beerBtn);
+	}
+
+	private void insertHomeContent() {
+		webRequest.updateURL(HomeContent.CONTENT_PATH);
+		setContent(new HomeContent(LayoutPage.this));
+		selectButton(homeBtn);
 	}
 
 	public void setContent(Content content) {

@@ -1,5 +1,6 @@
 package cz.gattserver.pubs.subwindows;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
@@ -12,10 +13,11 @@ import com.vaadin.ui.TextArea;
 import cz.gattserver.pubs.facades.CommentFacade;
 import cz.gattserver.pubs.model.dto.CommentDTO;
 import cz.gattserver.pubs.model.dto.PubDTO;
-import cz.gattserver.pubs.subwindows.common.BaseWindow;
-import cz.gattserver.pubs.subwindows.common.ConfirmWindow;
+import cz.gattserver.web.common.window.ConfirmWindow;
+import cz.gattserver.web.common.window.ErrorWindow;
+import cz.gattserver.web.common.window.WebWindow;
 
-public class CreatePubCommentWindow extends BaseWindow {
+public class CreatePubCommentWindow extends WebWindow {
 
 	private static final long serialVersionUID = -5681365970486437642L;
 
@@ -28,7 +30,8 @@ public class CreatePubCommentWindow extends BaseWindow {
 		BeanFieldGroup<CommentDTO> beanFieldGroup = new BeanFieldGroup<CommentDTO>(CommentDTO.class);
 		beanFieldGroup.setItemDataSource(new CommentDTO());
 
-		TextArea commentField = new TextArea("Komentář");
+		final TextArea commentField = new TextArea("Komentář");
+		commentField.setNullRepresentation("");
 		commentField.setWidth("400px");
 		commentField.setHeight("100px");
 		beanFieldGroup.bind(commentField, "text");
@@ -41,6 +44,12 @@ public class CreatePubCommentWindow extends BaseWindow {
 			public void buttonClick(ClickEvent event) {
 				try {
 					beanFieldGroup.commit();
+
+					if (StringUtils.isBlank(commentField.getValue())) {
+						getUI().addWindow(new ErrorWindow("Komentář nesmí být prázdný"));
+						return;
+					}
+
 					Long id = commentFacade.createComment(p, beanFieldGroup.getItemDataSource().getBean());
 					onCreation(id);
 					getUI().removeWindow(CreatePubCommentWindow.this);
@@ -53,7 +62,7 @@ public class CreatePubCommentWindow extends BaseWindow {
 		setComponentAlignment(createBtn, Alignment.BOTTOM_RIGHT);
 
 	}
-	
+
 	protected void onCreation(Long id) {
 	}
 

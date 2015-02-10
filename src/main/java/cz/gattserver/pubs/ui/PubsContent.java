@@ -21,6 +21,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Link;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 
 import cz.gattserver.pubs.facades.CommentFacade;
@@ -31,17 +32,21 @@ import cz.gattserver.pubs.model.dto.PubDTO;
 import cz.gattserver.pubs.subwindows.CreatePubCommentWindow;
 import cz.gattserver.pubs.subwindows.CreatePubWindow;
 import cz.gattserver.pubs.util.StringToDateConverter;
+import cz.gattserver.web.common.URLPathAnalyzer;
 
 public class PubsContent extends Content {
 
 	private static final long serialVersionUID = -2446097146634308270L;
+
+	private static final String MAPS_QUERY_PREFIX = "http://maps.google.com/?q=";
+	public static final String CONTENT_PATH = "pubs";
 
 	@Autowired
 	private SecurityFacade securityFacade;
 
 	@Autowired
 	private PubFacade pubFacade;
-	
+
 	@Autowired
 	private CommentFacade commentFacade;
 
@@ -49,6 +54,7 @@ public class PubsContent extends Content {
 	private BeanContainer<Long, PubDTO> container;
 
 	private VerticalLayout pubAndCommentsLayout;
+	private VerticalLayout commentsLayout;
 
 	private void populateContainer() {
 		container.removeAllItems();
@@ -92,12 +98,11 @@ public class PubsContent extends Content {
 			rankLayout.addComponent(rankStar);
 		}
 
-		Label addressLabel = new Label(p.getAddress());
-		addressLabel.setCaption("Adresa");
-		pubDetails.addComponent(addressLabel);
+		Link addressLink = new Link(p.getAddress(), new ExternalResource(MAPS_QUERY_PREFIX + p.getAddress()));
+		addressLink.setTargetName("_blank");
+		pubDetails.addComponent(addressLink);
 
 		Component webAddressLink = createWebAddressLink(p);
-		webAddressLink.setCaption("Webové stránky");
 		pubDetails.addComponent(webAddressLink);
 
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
@@ -107,23 +112,24 @@ public class PubsContent extends Content {
 		lastVisitLabel.setCaption("Poslední návštěva");
 		pubDetails.addComponent(lastVisitLabel);
 
-		Label detailsLabel = new Label(p.getAddress());
+		Label detailsLabel = new Label(p.getDescription());
 		detailsLabel.setCaption("Popis hospody");
 		pubDetails.addComponent(detailsLabel);
 
-		// HorizontalLayout comments = new HorizontalLayout();
-		// comments.setSpacing(true);
-
-		if (securityFacade.getCurrentUser() != null) { 
+		if (securityFacade.getCurrentUser() != null) {
 			Button createBtn = new Button("Přidat komentář", new Button.ClickListener() {
 				private static final long serialVersionUID = 2071604101486581247L;
 
 				@Override
 				public void buttonClick(ClickEvent event) {
 					getUI().addWindow(new CreatePubCommentWindow(p) {
+						private static final long serialVersionUID = -452606461049128450L;
+
 						@Override
 						protected void onCreation(Long id) {
-							CommentDTO commentDTO = commentFacade.findById(id);
+							CommentDTO c = commentFacade.findById(id);
+							p.getComments().add(c);
+							addComment(c);
 						}
 					});
 				}
@@ -132,13 +138,23 @@ public class PubsContent extends Content {
 			pubAndCommentsLayout.addComponent(createBtn);
 		}
 
+		commentsLayout = new VerticalLayout();
+		commentsLayout.setSpacing(true);
+		pubAndCommentsLayout.addComponent(commentsLayout);
+
 		for (CommentDTO c : p.getComments()) {
-			Label comment = new Label(c.getText());
-			comment.setWidth(null);
-			comment.setCaption(c.getAuthor().getName() + " " + "(" + dateFormat.format(c.getCreationDate()) + ")");
-			pubAndCommentsLayout.addComponent(comment);
+			addComment(c);
 		}
 
+	}
+
+	private void addComment(CommentDTO c) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+		Label comment = new Label(c.getText());
+		Panel panel = new Panel();
+		panel.setCaption(c.getAuthor().getName() + " " + "(" + dateFormat.format(c.getCreationDate()) + ")");
+		panel.setContent(comment);
+		commentsLayout.addComponentAsFirst(panel);
 	}
 
 	private Component createWebAddressLink(PubDTO p) {
@@ -152,9 +168,6 @@ public class PubsContent extends Content {
 	public PubsContent(LayoutPage layoutPage) {
 		super(layoutPage);
 
-		/**
-		 * Tabulka HW
-		 */
 		table.setSelectable(true);
 		table.setImmediate(true);
 		container = new BeanContainer<Long, PubDTO>(PubDTO.class);
@@ -219,9 +232,12 @@ public class PubsContent extends Content {
 					@SuppressWarnings("unchecked")
 					BeanItem<PubDTO> item = (BeanItem<PubDTO>) table.getItem(table.getValue());
 					showPubDetail(item.getBean());
+					layoutPage.getWebRequest().updateURL(CONTENT_PATH + "/" + item.getBean().getName());
 				}
 			}
 		});
+
+		URLPathAnalyzer analyzer = layoutPage.getWebRequest().getAnalyzer();
 
 		addComponent(table);
 
@@ -237,7 +253,16 @@ public class PubsContent extends Content {
 
 				@Override
 				public void buttonClick(ClickEvent event) {
-					getUI().addWindow(new CreatePubWindow());
+					getUI().addWindow(new CreatePubWindow() {
+						private static final long serialVersionUID = -7533537841540613862L;
+
+						@Override
+						protected void onCreation(Long id) {
+							PubDTO newPub = pubFacade.findById(id);
+							container.addBean(newPub);
+							sortTable();
+						}
+					});
 				}
 			});
 			createBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/tags/plus_16.png"));
@@ -251,6 +276,15 @@ public class PubsContent extends Content {
 		pubAndCommentsLayout.setSpacing(true);
 		addComponent(pubAndCommentsLayout);
 		pubAndCommentsLayout.setWidth("100%");
+
+		// pokud nebyla cesta prázná, pak proveď posuv
+		if (analyzer.getCurrentPathToken() != null) {
+			String pubName = analyzer.getCurrentPathToken();
+			PubDTO pubDTO = pubFacade.findByName(pubName);
+			if (pubDTO != null)
+				table.select(pubDTO.getId());
+			analyzer.shift();
+		}
 
 	}
 }

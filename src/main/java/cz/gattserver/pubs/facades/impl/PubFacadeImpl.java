@@ -33,4 +33,14 @@ public class PubFacadeImpl implements PubFacade {
 		pub.setCreationDate(Calendar.getInstance().getTime());
 		return pubRepository.save(pub).getId();
 	}
+
+	@Override
+	public PubDTO findById(Long id) {
+		return mapper.map(pubRepository.findOne(id), PubDTO.class);
+	}
+
+	@Override
+	public PubDTO findByName(String pubName) {
+		return mapper.map(pubRepository.findByName(pubName), PubDTO.class);
+	}
 }

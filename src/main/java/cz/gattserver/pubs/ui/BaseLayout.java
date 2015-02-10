@@ -4,7 +4,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
 import cz.gattserver.pubs.PubsUI;
-import cz.gattserver.pubs.SpringContextHelper;
+import cz.gattserver.web.common.ui.SpringContextHelper;
 
 public class BaseLayout extends VerticalLayout {
 
