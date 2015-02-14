@@ -1,27 +1,37 @@
 package cz.gattserver.pubs.subwindows;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.vaadin.teemu.ratingstars.RatingStars;
+import org.vaadin.tokenfield.TokenField;
 
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
-import com.vaadin.event.LayoutEvents;
+import com.vaadin.data.util.BeanContainer;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.StreamResource.StreamSource;
 import com.vaadin.server.ThemeResource;
-import com.vaadin.shared.MouseEventDetails;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.themes.Reindeer;
+import com.vaadin.shared.ui.combobox.FilteringMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.VerticalLayout;
 
 import cz.gattserver.pubs.facades.PubFacade;
 import cz.gattserver.pubs.model.dto.PubDTO;
+import cz.gattserver.pubs.model.dto.PubTagDTO;
+import cz.gattserver.pubs.util.ImageUtils;
+import cz.gattserver.web.common.ui.MultiUpload;
 import cz.gattserver.web.common.window.ConfirmWindow;
 import cz.gattserver.web.common.window.ErrorWindow;
 import cz.gattserver.web.common.window.WebWindow;
@@ -33,76 +43,117 @@ public class CreatePubWindow extends WebWindow {
 	@Autowired
 	private PubFacade pubFacade;
 
+	private TokenField tags;
+	private MultiUpload upload;
+	private Embedded pubImage;
+
 	public CreatePubWindow() {
 		this(new PubDTO());
+	}
+
+	@SuppressWarnings("unchecked")
+	private Collection<String> getTags() {
+		return (Collection<String>) tags.getValue();
+	}
+
+	private void createUpload(VerticalLayout layout, PubDTO p) {
+		if (upload != null)
+			layout.removeComponent(upload);
+
+		upload = new MultiUpload(false) {
+			private static final long serialVersionUID = 8620441233254076257L;
+
+			@Override
+			protected void handleFile(InputStream in, String fileName, String mimeType, long length) {
+				ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				// vytvoř miniaturu
+				try {
+					ImageUtils.resizeImageFile(fileName, in, bos, 256, 256);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				p.setImage(bos.toByteArray());
+				refreshImage(pubImage, p);
+			}
+		};
+		upload.getMultiFileUpload().setMaxFileSize(2000000);
+		upload.getMultiFileUpload().setAcceptedMimeTypes(Arrays.asList(new String[] { "image/jpg", "image/jpeg" }));
+		upload.getMultiFileUpload().setUploadButtonCaptions("Nahrát foto", "Nahrát foto");
+		upload.setImmediate(true);
+		layout.addComponent(upload);
 	}
 
 	public CreatePubWindow(PubDTO p) {
 		super("Hospoda");
 
+		setWidth("600px");
+
 		BeanFieldGroup<PubDTO> beanFieldGroup = new BeanFieldGroup<PubDTO>(PubDTO.class);
 		beanFieldGroup.setItemDataSource(p);
 
+		HorizontalLayout detailsAndFotoLayout = new HorizontalLayout();
+		detailsAndFotoLayout.setSpacing(true);
+		detailsAndFotoLayout.setWidth("100%");
+		addComponent(detailsAndFotoLayout);
+
+		VerticalLayout detailsLayout = new VerticalLayout();
+		detailsLayout.setSpacing(true);
+		detailsAndFotoLayout.addComponent(detailsLayout);
+		detailsAndFotoLayout.setExpandRatio(detailsLayout, 1);
+
 		TextField nameField = new TextField("Název hospody");
 		nameField.setNullRepresentation("");
+		nameField.setWidth("100%");
 		beanFieldGroup.bind(nameField, "name");
-		addComponent(nameField);
+		detailsLayout.addComponent(nameField);
 
 		TextField addressField = new TextField("Adresa");
 		addressField.setNullRepresentation("");
+		addressField.setWidth("100%");
 		beanFieldGroup.bind(addressField, "address");
-		addComponent(addressField);
+		detailsLayout.addComponent(addressField);
 
 		TextField webAddressField = new TextField("Webová adresa");
 		webAddressField.setNullRepresentation("");
+		webAddressField.setWidth("100%");
 		beanFieldGroup.bind(webAddressField, "webAddress");
-		addComponent(webAddressField);
+		detailsLayout.addComponent(webAddressField);
 
-		ComboBox rankBox = new ComboBox("Hodnocení (víc je líp)", Arrays.asList(new Integer[] { 1, 2, 3, 4, 5 }));
-		rankBox.setNullSelectionAllowed(false);
-		beanFieldGroup.bind(rankBox, "rank");
-		rankBox.setValue(3);
+		createUpload(detailsLayout, p);
 
-		// DateField lastVisitField = new DateField("Naposledy navštíveno");
-		// beanFieldGroup.bind(lastVisitField, "lastVisit");
+		pubImage = new Embedded(null, null);
+		refreshImage(pubImage, p);
+		// pubImage.setWidth("256px");
+		pubImage.setImmediate(true);
+		detailsAndFotoLayout.addComponent(pubImage);
 
-		// HorizontalLayout rankAndVisitLayout = new HorizontalLayout(rankBox, lastVisitField);
-		// rankAndVisitLayout.setSpacing(true);
-		// addComponent(rankAndVisitLayout);
+		// TextArea descriptionField = new TextArea("Popis");
+		// descriptionField.setWidth("100%");
+		// descriptionField.setHeight("100px");
+		// descriptionField.setNullRepresentation("");
+		// beanFieldGroup.bind(descriptionField, "description");
+		// addComponent(descriptionField);
 
-		// final int RANK_BUTTONS_COUNT = 5;
-		// HorizontalLayout rankLayout = new HorizontalLayout();
-		// rankLayout.setSpacing(true);
-		// Button[] rankButtons = new Button[RANK_BUTTONS_COUNT];
-		//
-		// for (int i = 0; i < RANK_BUTTONS_COUNT; i++) {
-		// Button rankButton = new Button("", new Button.ClickListener() {
-		// private static final long serialVersionUID = 2071604101486581247L;
-		//
-		// @Override
-		// public void buttonClick(ClickEvent event) {
-		// }
-		// });
-		// rankButton.addListener(Mouse., target, method);
-		// rankLayout.addComponent(rankButton);
-		// rankButton.setImmediate(true);
-		// rankButton.setStyleName(Reindeer.BUTTON_LINK);
-		// rankButton.addStyleName("rank-button");
-		// rankButton.setIcon((com.vaadin.server.Resource) new ThemeResource("img/unetice_rank.png"));
-		// rankButtons[i] = rankButton;
-		// }
-		// addComponent(rankLayout);
+		// inicializace možností
+		List<PubTagDTO> tagsOptions = pubFacade.getPubTagsForOverview();
+		BeanContainer<String, PubTagDTO> tokens = new BeanContainer<String, PubTagDTO>(PubTagDTO.class);
+		tokens.setBeanIdProperty("name");
+		tokens.addAll(tagsOptions);
 
-		RatingStars ratingStars = new RatingStars();
-		ratingStars.setAnimated(false);
-		addComponent(ratingStars);
+		tags = new TokenField();
+		tags.setCaption("Vybraná piva a pochutiny");
+		tags.setStyleName(TokenField.STYLE_TOKENFIELD);
+		tags.setContainerDataSource(tokens);
+		tags.setFilteringMode(FilteringMode.CONTAINS); // suggest
+		tags.setTokenCaptionPropertyId("name");
+		tags.setInputPrompt("pití nebo jídlo");
+		tags.setRememberNewTokens(false);
+		tags.isEnabled();
+		addComponent(tags);
 
-		TextArea descriptionField = new TextArea("Popis");
-		descriptionField.setWidth("400px");
-		descriptionField.setHeight("100px");
-		descriptionField.setNullRepresentation("");
-		beanFieldGroup.bind(descriptionField, "description");
-		addComponent(descriptionField);
+		for (PubTagDTO tagDTO : p.getTags()) {
+			tags.addToken(tagDTO.getName());
+		}
 
 		Button createBtn = new Button("Uložit", new Button.ClickListener() {
 			private static final long serialVersionUID = 2071604101486581247L;
@@ -122,7 +173,9 @@ public class CreatePubWindow extends WebWindow {
 						return;
 					}
 
-					Long id = pubFacade.createPub(beanFieldGroup.getItemDataSource().getBean());
+					PubDTO pubToSave = beanFieldGroup.getItemDataSource().getBean();
+
+					Long id = pubFacade.savePub(pubToSave, getTags());
 					onCreation(id);
 					getUI().removeWindow(CreatePubWindow.this);
 				} catch (CommitException e) {
@@ -133,6 +186,21 @@ public class CreatePubWindow extends WebWindow {
 		addComponent(createBtn);
 		setComponentAlignment(createBtn, Alignment.BOTTOM_RIGHT);
 
+	}
+
+	private void refreshImage(Embedded pubImage, PubDTO p) {
+		if (p.getImage() == null) {
+			pubImage.setSource(new ThemeResource("img/no_foto.png"));
+		} else {
+			pubImage.setSource(new StreamResource(new StreamSource() {
+				private static final long serialVersionUID = 414452413648278444L;
+
+				@Override
+				public InputStream getStream() {
+					return new ByteArrayInputStream(p.getImage());
+				}
+			}, p.getName() + ".jpg"));
+		}
 	}
 
 	protected void onCreation(Long id) {

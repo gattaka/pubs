@@ -1,8 +1,5 @@
 package cz.gattserver.pubs.subwindows;
 
-import java.util.Calendar;
-import java.util.Date;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 

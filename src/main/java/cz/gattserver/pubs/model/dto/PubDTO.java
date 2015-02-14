@@ -3,6 +3,7 @@ package cz.gattserver.pubs.model.dto;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 public class PubDTO implements Serializable {
 
@@ -41,7 +42,12 @@ public class PubDTO implements Serializable {
 	/**
 	 * Hodnocení
 	 */
-	private Integer rank;
+	private Integer rankSum;
+
+	/**
+	 * Hodnocení
+	 */
+	private Integer rankCount;
 
 	/**
 	 * Poslední návštěva
@@ -52,6 +58,29 @@ public class PubDTO implements Serializable {
 	 * WWW stránky
 	 */
 	private String webAddress;
+
+	private byte[] image;
+
+	/**
+	 * Tagy
+	 */
+	private Set<PubTagDTO> tags;
+
+	public Set<PubTagDTO> getTags() {
+		return tags;
+	}
+
+	public void setTags(Set<PubTagDTO> tags) {
+		this.tags = tags;
+	}
+
+	public byte[] getImage() {
+		return image;
+	}
+
+	public void setImage(byte[] image) {
+		this.image = image;
+	}
 
 	public String getWebAddress() {
 		return webAddress;
@@ -67,14 +96,6 @@ public class PubDTO implements Serializable {
 
 	public void setLastVisit(Date lastVisit) {
 		this.lastVisit = lastVisit;
-	}
-
-	public Integer getRank() {
-		return rank;
-	}
-
-	public void setRank(Integer rank) {
-		this.rank = rank;
 	}
 
 	public Long getId() {
@@ -124,12 +145,12 @@ public class PubDTO implements Serializable {
 	public void setComments(List<CommentDTO> comments) {
 		this.comments = comments;
 	}
-	
+
 	@Override
 	public String toString() {
 		return name;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof PubDTO) {
@@ -143,5 +164,28 @@ public class PubDTO implements Serializable {
 	public int hashCode() {
 		return id.hashCode();
 	}
-	
+
+	public Integer getRankSum() {
+		return rankSum;
+	}
+
+	public void setRankSum(Integer rankSum) {
+		this.rankSum = rankSum;
+	}
+
+	public Integer getRankCount() {
+		return rankCount;
+	}
+
+	public void setRankCount(Integer rankCount) {
+		this.rankCount = rankCount;
+	}
+
+	public int getRank() {
+		if (rankSum == null || rankCount == null || rankCount == 0)
+			return 0;
+		else
+			return rankSum / rankCount;
+	}
+
 }

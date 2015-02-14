@@ -83,7 +83,7 @@ public class CreateVisitWindow extends WebWindow {
 		addComponent(authorComboBox);
 
 		BeanItemContainer<PubDTO> pubs = new BeanItemContainer<>(PubDTO.class);
-		pubs.addAll(pubFacade.findAllPubs());
+		pubs.addAll(pubFacade.getAllPubs());
 
 		ComboBox pubComboBox = new ComboBox("Hospoda", pubs);
 		pubComboBox.setFilteringMode(FilteringMode.CONTAINS);

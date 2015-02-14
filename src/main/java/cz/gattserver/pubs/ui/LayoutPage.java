@@ -9,7 +9,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.themes.Reindeer;
 
 import cz.gattserver.pubs.model.dto.UserDTO;
-import cz.gattserver.web.common.ui.WebRequest;
+import cz.gattserver.web.common.WebRequest;
 
 public class LayoutPage extends BaseLayout {
 
@@ -139,6 +139,9 @@ public class LayoutPage extends BaseLayout {
 			break;
 		case BeerContent.CONTENT_PATH:
 			insertBeerContent();
+			break;
+		case RegisterContent.CONTENT_PATH:
+			setContent(new RegisterContent(LayoutPage.this));
 			break;
 		case HomeContent.CONTENT_PATH:
 		default:

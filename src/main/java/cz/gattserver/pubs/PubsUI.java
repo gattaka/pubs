@@ -12,9 +12,9 @@ import cz.gattserver.pubs.facades.SecurityFacade;
 import cz.gattserver.pubs.facades.UserFacade;
 import cz.gattserver.pubs.model.dto.UserDTO;
 import cz.gattserver.pubs.ui.LayoutPage;
-import cz.gattserver.web.common.ui.PageState;
-import cz.gattserver.web.common.ui.WebRequest;
-import cz.gattserver.web.common.ui.WebUI;
+import cz.gattserver.web.common.PageState;
+import cz.gattserver.web.common.WebRequest;
+import cz.gattserver.web.common.WebUI;
 
 @Title("Pubs")
 @Theme("pubs")
@@ -55,8 +55,6 @@ public class PubsUI extends WebUI {
 		LayoutPage layoutPage = new LayoutPage(webRequest, path);
 		wrapper.addComponent(layoutPage);
 		wrapper.setComponentAlignment(layoutPage, Alignment.TOP_CENTER);
-
-		// userFacade.registrateNewUser("gattakahynca@seznam.cz", "marcelgroup", "_uterkyMarcel_");
 
 		return wrapper;
 	}

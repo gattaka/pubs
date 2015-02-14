@@ -1,21 +1,27 @@
 package cz.gattserver.pubs.ui;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.tepi.filtertable.FilterTable;
+import org.vaadin.tokenfield.TokenField;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.server.ExternalResource;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.StreamResource.StreamSource;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomTable;
 import com.vaadin.ui.CustomTable.ColumnGenerator;
+import com.vaadin.ui.themes.BaseTheme;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -29,8 +35,10 @@ import cz.gattserver.pubs.facades.PubFacade;
 import cz.gattserver.pubs.facades.SecurityFacade;
 import cz.gattserver.pubs.model.dto.CommentDTO;
 import cz.gattserver.pubs.model.dto.PubDTO;
+import cz.gattserver.pubs.model.dto.PubTagDTO;
 import cz.gattserver.pubs.subwindows.CreatePubCommentWindow;
 import cz.gattserver.pubs.subwindows.CreatePubWindow;
+import cz.gattserver.pubs.subwindows.RankPubWindow;
 import cz.gattserver.pubs.util.StringToDateConverter;
 import cz.gattserver.web.common.URLPathAnalyzer;
 
@@ -57,10 +65,45 @@ public class PubsContent extends Content {
 	private VerticalLayout commentsLayout;
 
 	private Button editBtn;
+	private Button rankBtn;
 
 	private void populateContainer() {
-		container.removeAllItems();
-		container.addAll(pubFacade.findAllPubs());
+		container = new BeanContainer<Long, PubDTO>(PubDTO.class);
+		container.setBeanIdProperty("id");
+		container.addAll(pubFacade.getAllPubs());
+		table.setContainerDataSource(container);
+
+		table.setConverter("lastVisit", new StringToDateConverter());
+
+		table.setColumnHeader("rankIlustrated", "Hodnocení");
+		table.setColumnHeader("name", "Název");
+		table.setColumnHeader("address", "Adresa");
+		table.setColumnHeader("link", "Webové stránky");
+
+		table.setColumnWidth("rankIlustrated", 70);
+
+		table.setVisibleColumns(new Object[] { "rankIlustrated", "name", "address", "link" });
+		table.setWidth("100%");
+
+		table.setFilterBarVisible(true);
+		table.addValueChangeListener(new ValueChangeListener() {
+			private static final long serialVersionUID = 1187013531601185692L;
+
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				boolean selected = table.getValue() != null;
+				if (selected) {
+					@SuppressWarnings("unchecked")
+					BeanItem<PubDTO> item = (BeanItem<PubDTO>) table.getItem(table.getValue());
+					showPubDetail(item.getBean());
+					layoutPage.getWebRequest().updateURL(CONTENT_PATH + "/" + item.getBean().getName());
+				}
+				if (editBtn != null)
+					editBtn.setEnabled(selected);
+				if (rankBtn != null)
+					rankBtn.setEnabled(selected);
+			}
+		});
 		sortTable();
 	}
 
@@ -75,9 +118,20 @@ public class PubsContent extends Content {
 		pubLayout.setSpacing(true);
 		pubAndCommentsLayout.addComponent(pubLayout);
 
-		// TODO z DB
-		Embedded pubImage = new Embedded(null, new ThemeResource("img/no_foto.png"));
-		pubImage.setWidth("256px");
+		Embedded pubImage;
+		if (p.getImage() == null) {
+			pubImage = new Embedded(null, new ThemeResource("img/no_foto.png"));
+		} else {
+			pubImage = new Embedded(null, new StreamResource(new StreamSource() {
+				private static final long serialVersionUID = 414452413648278444L;
+
+				@Override
+				public InputStream getStream() {
+					return new ByteArrayInputStream(p.getImage());
+				}
+			}, p.getName() + ".jpg"));
+		}
+		// pubImage.setWidth("256px");
 		pubLayout.addComponent(pubImage);
 
 		VerticalLayout pubDetails = new VerticalLayout();
@@ -107,7 +161,7 @@ public class PubsContent extends Content {
 		Component webAddressLink = createWebAddressLink(p);
 		pubDetails.addComponent(webAddressLink);
 
-		// Tohle asi nakonec nemá moc víznam, protože když se zapomene ten sraz zrušit a pak se půjde někam jinam
+		// Tohle asi nakonec nemá moc význam, protože když se zapomene ten sraz zrušit a pak se půjde někam jinam
 		// apod... je to takové zbytečné -- dá se to zjistit z přehledu
 		// SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 		// Label lastVisitLabel = new Label(p.getLastVisit() == null ? "Zatím nenavštíveno" : dateFormat.format(p
@@ -115,9 +169,25 @@ public class PubsContent extends Content {
 		// lastVisitLabel.setCaption("Poslední návštěva");
 		// pubDetails.addComponent(lastVisitLabel);
 
-		Label detailsLabel = new Label(p.getDescription());
-		detailsLabel.setCaption("Popis hospody");
-		pubDetails.addComponent(detailsLabel);
+		// if (StringUtils.isNotBlank(p.getDescription())) {
+		// Label detailsLabel = new Label(p.getDescription());
+		// detailsLabel.setWidth("100%");
+		// Panel detailsLabelPanel = new Panel();
+		// detailsLabelPanel.setCaption("Popis hospody");
+		// detailsLabelPanel.setContent(detailsLabel);
+		// detailsLabelPanel.setWidth("250px");
+		// pubDetails.addComponent(detailsLabelPanel);
+		// }
+
+		HorizontalLayout tagsLayout = new HorizontalLayout();
+		tagsLayout.addStyleName(TokenField.STYLE_TOKENFIELD);
+		tagsLayout.setSpacing(true);
+		for (PubTagDTO tag : p.getTags()) {
+			Button btn = new Button(tag.getName());
+			btn.setStyleName(BaseTheme.BUTTON_LINK);
+			tagsLayout.addComponent(btn);
+		}
+		pubDetails.addComponent(tagsLayout);
 
 		if (securityFacade.getCurrentUser() != null) {
 			Button createBtn = new Button("Přidat komentář", new Button.ClickListener() {
@@ -214,12 +284,6 @@ public class PubsContent extends Content {
 
 		table.setSelectable(true);
 		table.setImmediate(true);
-		container = new BeanContainer<Long, PubDTO>(PubDTO.class);
-		container.setBeanIdProperty("id");
-		populateContainer();
-		table.setContainerDataSource(container);
-
-		table.setConverter("lastVisit", new StringToDateConverter());
 
 		table.addGeneratedColumn("link", new ColumnGenerator() {
 			private static final long serialVersionUID = -7036829480797154987L;
@@ -254,34 +318,7 @@ public class PubsContent extends Content {
 			}
 		});
 
-		table.setColumnHeader("rankIlustrated", "Hodnocení");
-		table.setColumnHeader("name", "Název");
-		table.setColumnHeader("address", "Adresa");
-		table.setColumnHeader("lastVisit", "Poslední návštěva");
-		table.setColumnHeader("link", "Webové stránky");
-
-		table.setColumnWidth("rankIlustrated", 70);
-
-		table.setVisibleColumns(new Object[] { "rankIlustrated", "name", "address", "lastVisit", "link" });
-		table.setWidth("100%");
-
-		table.setFilterBarVisible(true);
-		table.addValueChangeListener(new ValueChangeListener() {
-			private static final long serialVersionUID = 1187013531601185692L;
-
-			@Override
-			public void valueChange(ValueChangeEvent event) {
-				boolean selected = table.getValue() != null;
-				if (selected) {
-					@SuppressWarnings("unchecked")
-					BeanItem<PubDTO> item = (BeanItem<PubDTO>) table.getItem(table.getValue());
-					showPubDetail(item.getBean());
-					layoutPage.getWebRequest().updateURL(CONTENT_PATH + "/" + item.getBean().getName());
-				}
-				if (editBtn != null)
-					editBtn.setEnabled(selected);
-			}
-		});
+		populateContainer();
 
 		URLPathAnalyzer analyzer = layoutPage.getWebRequest().getAnalyzer();
 
@@ -333,8 +370,7 @@ public class PubsContent extends Content {
 						@Override
 						protected void onCreation(Long id) {
 							PubDTO newPub = pubFacade.getById(id);
-							container.removeItem(beanItem);
-							container.addBean(newPub);
+							populateContainer();
 							showPubDetail(newPub);
 							sortTable();
 						}
@@ -344,6 +380,32 @@ public class PubsContent extends Content {
 			editBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/tags/pencil_16.png"));
 			editBtn.setEnabled(false);
 			btnLayout.addComponent(editBtn);
+
+			rankBtn = new Button("Přidat hodnocení", new Button.ClickListener() {
+				private static final long serialVersionUID = 2071604101486581247L;
+
+				@Override
+				public void buttonClick(ClickEvent event) {
+					@SuppressWarnings("unchecked")
+					BeanItem<PubDTO> beanItem = (BeanItem<PubDTO>) table.getItem(table.getValue());
+					PubDTO item = beanItem.getBean();
+					getUI().addWindow(new RankPubWindow(item) {
+						private static final long serialVersionUID = -7533537841540613862L;
+
+						@Override
+						protected void onCreation(Long id) {
+							PubDTO newPub = pubFacade.getById(id);
+							populateContainer();
+							showPubDetail(newPub);
+							sortTable();
+						}
+					});
+				}
+			});
+			rankBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/tags/statistics_16.png"));
+			rankBtn.setEnabled(false);
+			btnLayout.addComponent(rankBtn);
+
 		}
 
 		// separator

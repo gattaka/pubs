@@ -3,6 +3,7 @@ package cz.gattserver.pubs.model.domain;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -10,6 +11,8 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -70,7 +73,56 @@ public class Pub implements Serializable {
 	/**
 	 * Hodnocení
 	 */
-	private Integer rank;
+	private Integer rankSum;
+
+	/**
+	 * Hodnocení
+	 */
+	private Integer rankCount;
+
+	/**
+	 * Foto
+	 */
+	@Lob
+	private byte[] image;
+
+	/**
+	 * Tagy
+	 */
+	@ManyToMany
+	private Set<PubTag> tags;
+
+	public Integer getRankSum() {
+		return rankSum;
+	}
+
+	public void setRankSum(Integer rankSum) {
+		this.rankSum = rankSum;
+	}
+
+	public Integer getRankCount() {
+		return rankCount;
+	}
+
+	public void setRankCount(Integer rankCount) {
+		this.rankCount = rankCount;
+	}
+
+	public Set<PubTag> getTags() {
+		return tags;
+	}
+
+	public void setTags(Set<PubTag> tags) {
+		this.tags = tags;
+	}
+
+	public byte[] getImage() {
+		return image;
+	}
+
+	public void setImage(byte[] image) {
+		this.image = image;
+	}
 
 	public String getWebAddress() {
 		return webAddress;
@@ -86,14 +138,6 @@ public class Pub implements Serializable {
 
 	public void setLastVisit(Date lastVisit) {
 		this.lastVisit = lastVisit;
-	}
-
-	public Integer getRank() {
-		return rank;
-	}
-
-	public void setRank(Integer rank) {
-		this.rank = rank;
 	}
 
 	public Long getId() {
