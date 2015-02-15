@@ -151,9 +151,10 @@ public class CreatePubWindow extends WebWindow {
 		tags.isEnabled();
 		addComponent(tags);
 
-		for (PubTagDTO tagDTO : p.getTags()) {
-			tags.addToken(tagDTO.getName());
-		}
+		if (p.getTags() != null)
+			for (PubTagDTO tagDTO : p.getTags()) {
+				tags.addToken(tagDTO.getName());
+			}
 
 		Button createBtn = new Button("Uložit", new Button.ClickListener() {
 			private static final long serialVersionUID = 2071604101486581247L;

@@ -49,12 +49,13 @@ public class BeerContent extends Content {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
 				pubsLayout.removeAllComponents();
+				if (table.getValue() != null) {
+					@SuppressWarnings("unchecked")
+					BeanItem<PubTagDTO> item = (BeanItem<PubTagDTO>) table.getItem(table.getValue());
 
-				@SuppressWarnings("unchecked")
-				BeanItem<PubTagDTO> item = (BeanItem<PubTagDTO>) table.getItem(table.getValue());
-
-				for (PubDTO pub : item.getBean().getPubs()) {
-					pubsLayout.addComponent(new Link(pub.getName(), createPubLinkResource(pub)));
+					for (PubDTO pub : item.getBean().getPubs()) {
+						pubsLayout.addComponent(new Link(pub.getName(), createPubLinkResource(pub)));
+					} 
 				}
 			}
 		});
