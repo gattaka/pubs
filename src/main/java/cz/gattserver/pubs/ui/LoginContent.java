@@ -7,7 +7,7 @@ public class LoginContent extends Content {
 
 	private static final long serialVersionUID = -3949087798185114415L;
 
-	public LoginContent(LayoutPage layoutPage) {
+	public LoginContent(MenuLayoutPage layoutPage) {
 		super(layoutPage);
 		setSpacing(true);
 		setMargin(true);

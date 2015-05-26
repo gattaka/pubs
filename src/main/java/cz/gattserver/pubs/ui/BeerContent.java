@@ -19,7 +19,7 @@ public class BeerContent extends Content {
 
 	private static final long serialVersionUID = -2446097146634308270L;
 
-	public static final String CONTENT_PATH = "beer";
+	public static final String PATH = "items";
 
 	@Autowired
 	private PubFacade pubFacade;
@@ -28,10 +28,10 @@ public class BeerContent extends Content {
 
 	private ExternalResource createPubLinkResource(PubDTO pubDTO) {
 		return new ExternalResource(layoutPage.getWebRequest().getPageURL(
-				PubsContent.CONTENT_PATH + "/" + pubDTO.getName()));
+				PubsContent.PATH + "/" + pubDTO.getName()));
 	}
 
-	public BeerContent(LayoutPage layoutPage) {
+	public BeerContent(MenuLayoutPage layoutPage) {
 		super(layoutPage);
 
 		Table table = new Table("Pivo a pochutiny", new BeanItemContainer<PubTagDTO>(PubTagDTO.class,

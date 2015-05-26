@@ -11,6 +11,7 @@ import com.vaadin.ui.VerticalLayout;
 import cz.gattserver.pubs.facades.SecurityFacade;
 import cz.gattserver.pubs.facades.UserFacade;
 import cz.gattserver.pubs.model.dto.UserDTO;
+import cz.gattserver.pubs.ui.DispatcherPage;
 import cz.gattserver.pubs.ui.LayoutPage;
 import cz.gattserver.web.common.PageState;
 import cz.gattserver.web.common.WebRequest;
@@ -45,14 +46,14 @@ public class PubsUI extends WebUI {
 	}
 
 	@Override
-	protected Layout createPageByPath(String path, WebRequest webRequest) {
+	protected Layout createPageByPath(WebRequest webRequest) {
 
 		VerticalLayout wrapper = new VerticalLayout();
 		setContent(wrapper);
 		wrapper.setSizeFull();
 		wrapper.setSpacing(true);
 		wrapper.setMargin(true);
-		LayoutPage layoutPage = new LayoutPage(webRequest, path);
+		LayoutPage layoutPage = new DispatcherPage(webRequest);
 		wrapper.addComponent(layoutPage);
 		wrapper.setComponentAlignment(layoutPage, Alignment.TOP_CENTER);
 

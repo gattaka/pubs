@@ -66,6 +66,45 @@ public class PubDTO implements Serializable {
 	 */
 	private Set<PubTagDTO> tags;
 
+	/**
+	 * Má se zobrazovat jako hospoda?
+	 */
+	private Boolean beer;
+
+	/**
+	 * Má se zobrazovat jako vinárna?
+	 */
+	private Boolean wine;
+
+	/**
+	 * Má se zobrazovat jako kavárna?
+	 */
+	private Boolean coffee;
+
+	public Boolean isBeer() {
+		return beer;
+	}
+
+	public void setBeer(Boolean beer) {
+		this.beer = beer;
+	}
+
+	public Boolean isWine() {
+		return wine;
+	}
+
+	public void setWine(Boolean wine) {
+		this.wine = wine;
+	}
+
+	public Boolean isCoffee() {
+		return coffee;
+	}
+
+	public void setCoffee(Boolean coffee) {
+		this.coffee = coffee;
+	}
+
 	public Set<PubTagDTO> getTags() {
 		return tags;
 	}

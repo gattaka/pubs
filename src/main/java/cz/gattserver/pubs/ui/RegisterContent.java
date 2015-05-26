@@ -16,12 +16,12 @@ public class RegisterContent extends Content {
 
 	private static final long serialVersionUID = -3949087798185114415L;
 
-	public static final String CONTENT_PATH = "marcelgroup_secret_registration_page";
+	public static final String PATH = "hidden_registration_page";
 
 	@Autowired
 	private UserFacade userFacade;
 
-	public RegisterContent(LayoutPage layoutPage) {
+	public RegisterContent(MenuLayoutPage layoutPage) {
 		super(layoutPage);
 		setSpacing(true);
 		setMargin(true);
@@ -71,7 +71,7 @@ public class RegisterContent extends Content {
 
 					@Override
 					public void close() {
-						layoutPage.getWebRequest().redirectToPage(HomeContent.CONTENT_PATH);
+						layoutPage.getWebRequest().redirectToPage(DispatcherPage.PATH);
 						super.close();
 					}
 				});

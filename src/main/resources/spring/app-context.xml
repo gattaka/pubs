@@ -33,6 +33,10 @@
 		<property name="url" value="${hibernate.connection.url}" />
 		<property name="username" value="${hibernate.connection.username}" />
 		<property name="password" value="${hibernate.connection.password}" />
+		<property name="validationQuery" value="SELECT 1" />
+		<property name="validationInterval" value="5000" />
+		<property name="testOnBorrow" value="true" />
+		<property name="testWhileIdle" value="true" />
 	</bean>
 
 	<bean id="jpaVendorAdapter"

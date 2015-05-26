@@ -25,11 +25,11 @@ import cz.gattserver.pubs.model.dto.VisitDTO;
 import cz.gattserver.pubs.subwindows.CreateVisitWindow;
 import cz.gattserver.pubs.util.StringToDateConverter;
 
-public class HomeContent extends Content {
+public class VisitsContent extends Content {
 
 	private static final long serialVersionUID = -2446097146634308270L;
 
-	public static final String CONTENT_PATH = "home";
+	public static final String CONTENT_PATH = "visits";
 	private static final String VISIT_DATE_FORMAT = "dd.MM.yyyy HH:mm";
 
 	@Autowired
@@ -48,7 +48,7 @@ public class HomeContent extends Content {
 
 	private ExternalResource createPubLinkResource(VisitDTO visitDTO) {
 		return new ExternalResource(layoutPage.getWebRequest().getPageURL(
-				PubsContent.CONTENT_PATH + "/" + visitDTO.getPub().getName()));
+				PubsContent.PATH + "/" + visitDTO.getPub().getName()));
 	}
 
 	private void refreshVisitsOverview() {
@@ -73,7 +73,7 @@ public class HomeContent extends Content {
 		}
 	}
 
-	public HomeContent(LayoutPage layoutPage) {
+	public VisitsContent(MenuLayoutPage layoutPage) {
 		super(layoutPage);
 		addComponent(new Label("<h1>Ahoj!</h1>", ContentMode.HTML));
 		addComponent(new Label(

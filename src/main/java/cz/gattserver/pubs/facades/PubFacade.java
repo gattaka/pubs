@@ -8,7 +8,7 @@ import cz.gattserver.pubs.model.dto.PubTagDTO;
 
 public interface PubFacade {
 
-	public List<PubDTO> getAllPubs();
+	public List<PubDTO> getAllBeerPubs();
 
 	public Long savePub(PubDTO pubDTO, Collection<String> tags);
 

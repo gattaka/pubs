@@ -32,8 +32,18 @@ public class PubFacadeImpl implements PubFacade {
 	@Autowired
 	private PubTagRepository pubTagRepository;
 
-	public List<PubDTO> getAllPubs() {
-		return mapper.map(pubRepository.findAll(), PubDTO.class);
+	private static final String HTTP_PREFIX = "http://";
+
+	public List<PubDTO> getAllBeerPubs() {
+		return mapper.map(pubRepository.findAllBeerPubs(), PubDTO.class);
+	}
+
+	public List<PubDTO> getAllWinePubs() {
+		return mapper.map(pubRepository.findAllWinePubs(), PubDTO.class);
+	}
+
+	public List<PubDTO> getAllCoffeePubs() {
+		return mapper.map(pubRepository.findAllCoffeePubs(), PubDTO.class);
 	}
 
 	@Override
@@ -43,6 +53,9 @@ public class PubFacadeImpl implements PubFacade {
 			pub.setRankCount(0);
 		if (pub.getRankSum() == null)
 			pub.setRankSum(0);
+		if (pub.getWebAddress() != null && pub.getWebAddress().startsWith(HTTP_PREFIX) == false) {
+			pub.setWebAddress(HTTP_PREFIX + pub.getWebAddress());
+		}
 		pub.setCreationDate(Calendar.getInstance().getTime());
 		pub = pubRepository.save(pub);
 		saveTags(tags, pub);
