@@ -99,3 +99,24 @@ div.v-slot.v-slot-link.v-slot-menu-item {
 	font-weight: bold;
 	font-size: 20px;
 }
+
+.v-button.v-widget.link.v-button-link.beer-button.v-button-beer-button .v-icon:hover
+	{
+	border-bottom: 10px solid darkorange;
+	margin-bottom: -10px;
+	padding-bottom: 0px;
+}
+
+.v-button.v-widget.link.v-button-link.wine-button.v-button-wine-button .v-icon:hover
+	{
+	border-bottom: 10px solid purple;
+	margin-bottom: -10px;
+	padding-bottom: 0px;
+}
+
+.v-button.v-widget.link.v-button-link.coffee-button.v-button-coffee-button .v-icon:hover
+	{
+	border-bottom: 10px solid chocolate;
+	margin-bottom: -10px;
+	padding-bottom: 0px;
+}

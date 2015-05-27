@@ -6,6 +6,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Layout;
+import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.Reindeer;
 
 import cz.gattserver.web.common.WebRequest;
@@ -54,8 +55,9 @@ public class DispatcherPage extends LayoutPage {
 			}
 		});
 		dispatcherLayout.addComponent(beerPubsBtn);
-		beerPubsBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/beer.png"));
+		beerPubsBtn.setIcon(new ThemeResource("img/beer_w.png"));
 		beerPubsBtn.setStyleName(Reindeer.BUTTON_LINK);
+		beerPubsBtn.addStyleName("beer-button");
 
 		winePubsBtn = new Button(null, new Button.ClickListener() {
 			private static final long serialVersionUID = 2071604101486581247L;
@@ -66,8 +68,9 @@ public class DispatcherPage extends LayoutPage {
 			}
 		});
 		dispatcherLayout.addComponent(winePubsBtn);
-		winePubsBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/wine.png"));
+		winePubsBtn.setIcon(new ThemeResource("img/wine_w.png"));
 		winePubsBtn.setStyleName(Reindeer.BUTTON_LINK);
+		winePubsBtn.addStyleName("wine-button");
 
 		coffeeBtn = new Button(null, new Button.ClickListener() {
 			private static final long serialVersionUID = 2071604101486581247L;
@@ -78,8 +81,9 @@ public class DispatcherPage extends LayoutPage {
 			}
 		});
 		dispatcherLayout.addComponent(coffeeBtn);
-		coffeeBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/coffee.png"));
+		coffeeBtn.setIcon(new ThemeResource("img/coffee_w.png"));
 		coffeeBtn.setStyleName(Reindeer.BUTTON_LINK);
+		coffeeBtn.addStyleName("coffee-button");
 	}
 
 	private void insertBeerLayout() {
