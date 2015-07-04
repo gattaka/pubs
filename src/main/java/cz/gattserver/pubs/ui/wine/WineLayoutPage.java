@@ -1,40 +1,42 @@
-package cz.gattserver.pubs.ui;
+package cz.gattserver.pubs.ui.wine;
 
+import cz.gattserver.pubs.ui.DispatcherPage;
+import cz.gattserver.pubs.ui.MenuLayoutPage;
 import cz.gattserver.web.common.WebRequest;
 
-public class BeerLayoutPage extends MenuLayoutPage {
+public class WineLayoutPage extends MenuLayoutPage {
 
 	private static final long serialVersionUID = -8530529024734782401L;
 
-	public static final String PATH = "beer";
+	public static final String PATH = "wine";
 
-	public BeerLayoutPage(WebRequest request, DispatcherPage dispatcherPage) {
+	public WineLayoutPage(WebRequest request, DispatcherPage dispatcherPage) {
 		super(request, dispatcherPage);
 	}
 
 	@Override
 	protected String getPlacesCaption() {
-		return "Hospody";
+		return "Vinárny";
 	}
 
 	@Override
 	protected String getItemsCaption() {
-		return "Piva";
+		return "Vína";
 	}
 
 	@Override
 	protected void insertPlacesContent() {
 		// musí být první, aby se dal přepsat konkrétní položkou
-		webRequest.updateURL(PubsContent.PATH);
-		setContent(new PubsContent(BeerLayoutPage.this));
+		webRequest.updateURL(WineLayoutPage.PATH, WinePubsContent.PATH);
+		setContent(new WinePubsContent(WineLayoutPage.this));
 		selectButton(placesBtn);
 	}
 
 	@Override
 	protected void insertItemsContent() {
 		// musí být první, aby se dal přepsat konkrétní položkou
-		webRequest.updateURL(BeerLayoutPage.PATH,BeerContent.PATH);
-		setContent(new BeerContent(BeerLayoutPage.this));
+		webRequest.updateURL(WineLayoutPage.PATH, WineItemsContent.PATH);
+		setContent(new WineItemsContent(WineLayoutPage.this));
 		selectButton(itemsBtn);
 	}
 
@@ -44,18 +46,15 @@ public class BeerLayoutPage extends MenuLayoutPage {
 		String path = webRequest.getAnalyzer().getNextPathToken();
 		String switchablePath = path == null ? "" : path;
 		switch (switchablePath) {
-		case PubsContent.PATH:
-			insertPlacesContent();
-			break;
-		case BeerContent.PATH:
+		case WineItemsContent.PATH:
 			insertItemsContent();
 			break;
-		case RegisterContent.PATH:
-			setContent(new RegisterContent(BeerLayoutPage.this));
-			break;
 		case DispatcherPage.PATH:
-		default:
 			insertHomeContent();
+			break;
+		case WinePubsContent.PATH:
+		default:
+			insertPlacesContent();
 			break;
 		}
 	}

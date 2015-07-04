@@ -12,7 +12,7 @@ import cz.gattserver.pubs.facades.UserFacade;
 import cz.gattserver.web.common.window.ErrorWindow;
 import cz.gattserver.web.common.window.InfoWindow;
 
-public class RegisterContent extends Content {
+public abstract class RegisterContent extends BaseLayout {
 
 	private static final long serialVersionUID = -3949087798185114415L;
 
@@ -21,11 +21,15 @@ public class RegisterContent extends Content {
 	@Autowired
 	private UserFacade userFacade;
 
-	public RegisterContent(MenuLayoutPage layoutPage) {
-		super(layoutPage);
+	protected abstract void onRegister();
+
+	public RegisterContent() {
 		setSpacing(true);
 		setMargin(true);
 
+		addStyleName("layout-box");
+		setWidth("1000px");
+		
 		TextField nameField = new TextField("Uživatelské jméno");
 		PasswordField passwordField = new PasswordField("Heslo");
 		PasswordField passwordField2 = new PasswordField("Heslo podruhé");
@@ -71,7 +75,7 @@ public class RegisterContent extends Content {
 
 					@Override
 					public void close() {
-						layoutPage.getWebRequest().redirectToPage(DispatcherPage.PATH);
+						onRegister();
 						super.close();
 					}
 				});

@@ -36,7 +36,7 @@ import cz.gattserver.web.common.window.ConfirmWindow;
 import cz.gattserver.web.common.window.ErrorWindow;
 import cz.gattserver.web.common.window.WebWindow;
 
-public class CreatePubWindow extends WebWindow {
+public abstract class CreatePubWindow extends WebWindow {
 
 	private static final long serialVersionUID = -5681365970486437642L;
 
@@ -47,8 +47,12 @@ public class CreatePubWindow extends WebWindow {
 	private MultiUpload upload;
 	private Embedded pubImage;
 
-	public CreatePubWindow() {
-		this(new PubDTO());
+	protected abstract Long savePub(PubDTO pubToSave, Collection<String> tags);
+
+	protected abstract String getStornoCreationCaption();
+
+	public interface OnCreationListener {
+		public void onCreation(Long id);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -83,7 +87,7 @@ public class CreatePubWindow extends WebWindow {
 		layout.addComponent(upload);
 	}
 
-	public CreatePubWindow(PubDTO p) {
+	public CreatePubWindow(PubDTO p, OnCreationListener onCreationListener) {
 		super("Hospoda");
 
 		setWidth("600px");
@@ -101,7 +105,7 @@ public class CreatePubWindow extends WebWindow {
 		detailsAndFotoLayout.addComponent(detailsLayout);
 		detailsAndFotoLayout.setExpandRatio(detailsLayout, 1);
 
-		TextField nameField = new TextField("Název hospody");
+		TextField nameField = new TextField("Název");
 		nameField.setNullRepresentation("");
 		nameField.setWidth("100%");
 		beanFieldGroup.bind(nameField, "name");
@@ -141,7 +145,7 @@ public class CreatePubWindow extends WebWindow {
 		tokens.addAll(tagsOptions);
 
 		tags = new TokenField();
-		tags.setCaption("Vybraná piva a pochutiny");
+		tags.setCaption("Štítky");
 		tags.setStyleName(TokenField.STYLE_TOKENFIELD);
 		tags.setContainerDataSource(tokens);
 		tags.setFilteringMode(FilteringMode.CONTAINS); // suggest
@@ -176,8 +180,8 @@ public class CreatePubWindow extends WebWindow {
 
 					PubDTO pubToSave = beanFieldGroup.getItemDataSource().getBean();
 
-					Long id = pubFacade.savePub(pubToSave, getTags());
-					onCreation(id);
+					Long id = savePub(pubToSave, getTags());
+					onCreationListener.onCreation(id);
 					getUI().removeWindow(CreatePubWindow.this);
 				} catch (CommitException e) {
 					e.printStackTrace();
@@ -204,12 +208,9 @@ public class CreatePubWindow extends WebWindow {
 		}
 	}
 
-	protected void onCreation(Long id) {
-	}
-
 	@Override
 	public void close() {
-		getUI().addWindow(new ConfirmWindow("Opravdu zrušit zakládání/úpravu nové hospody?") {
+		getUI().addWindow(new ConfirmWindow(getStornoCreationCaption()) {
 			private static final long serialVersionUID = -1263084559774811237L;
 
 			@Override

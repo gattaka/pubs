@@ -95,39 +95,39 @@ public class Pub implements Serializable {
 	/**
 	 * Má se zobrazovat jako hospoda?
 	 */
-	private Boolean beer;
+	private boolean beer;
 
 	/**
 	 * Má se zobrazovat jako vinárna?
 	 */
-	private Boolean wine;
+	private boolean wine;
 
 	/**
 	 * Má se zobrazovat jako kavárna?
 	 */
-	private Boolean coffee;
+	private boolean coffee;
 
-	public Boolean isBeer() {
+	public boolean isBeer() {
 		return beer;
 	}
 
-	public void setBeer(Boolean beer) {
+	public void setBeer(boolean beer) {
 		this.beer = beer;
 	}
 
-	public Boolean isWine() {
+	public boolean isWine() {
 		return wine;
 	}
 
-	public void setWine(Boolean wine) {
+	public void setWine(boolean wine) {
 		this.wine = wine;
 	}
 
-	public Boolean isCoffee() {
+	public boolean isCoffee() {
 		return coffee;
 	}
 
-	public void setCoffee(Boolean coffee) {
+	public void setCoffee(boolean coffee) {
 		this.coffee = coffee;
 	}
 

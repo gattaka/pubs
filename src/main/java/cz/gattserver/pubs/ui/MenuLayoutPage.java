@@ -107,7 +107,7 @@ public abstract class MenuLayoutPage extends LayoutPage {
 
 				@Override
 				public void buttonClick(ClickEvent event) {
-					setContent(new LoginContent(MenuLayoutPage.this));
+					webRequest.redirectToPage(LoginContent.PATH);
 					selectButton(loginBtn);
 				}
 			});

@@ -34,20 +34,22 @@ public class PubFacadeImpl implements PubFacade {
 
 	private static final String HTTP_PREFIX = "http://";
 
+	@Override
 	public List<PubDTO> getAllBeerPubs() {
 		return mapper.map(pubRepository.findAllBeerPubs(), PubDTO.class);
 	}
 
+	@Override
 	public List<PubDTO> getAllWinePubs() {
 		return mapper.map(pubRepository.findAllWinePubs(), PubDTO.class);
 	}
 
+	@Override
 	public List<PubDTO> getAllCoffeePubs() {
 		return mapper.map(pubRepository.findAllCoffeePubs(), PubDTO.class);
 	}
 
-	@Override
-	public Long savePub(PubDTO pubDTO, Collection<String> tags) {
+	private Long savePub(PubDTO pubDTO, Collection<String> tags) {
 		Pub pub = mapper.map(pubDTO, Pub.class);
 		if (pub.getRankCount() == null)
 			pub.setRankCount(0);
@@ -60,6 +62,24 @@ public class PubFacadeImpl implements PubFacade {
 		pub = pubRepository.save(pub);
 		saveTags(tags, pub);
 		return pub.getId();
+	}
+
+	@Override
+	public Long saveBeerPub(PubDTO pubDTO, Collection<String> tags) {
+		pubDTO.setBeer(true);
+		return savePub(pubDTO, tags);
+	}
+
+	@Override
+	public Long saveWinePub(PubDTO pubDTO, Collection<String> tags) {
+		pubDTO.setWine(true);
+		return savePub(pubDTO, tags);
+	}
+
+	@Override
+	public Long saveCoffeePub(PubDTO pubDTO, Collection<String> tags) {
+		pubDTO.setCoffee(true);
+		return savePub(pubDTO, tags);
 	}
 
 	@Override
@@ -187,8 +207,18 @@ public class PubFacadeImpl implements PubFacade {
 	}
 
 	@Override
-	public List<PubTagDTO> getAllPubTags() {
-		return mapper.map(pubTagRepository.findAll(), PubTagDTO.class);
+	public List<PubTagDTO> getBeerPubTags() {
+		return mapper.map(pubTagRepository.findByBeerPubs(), PubTagDTO.class);
+	}
+
+	@Override
+	public List<PubTagDTO> getWinePubTags() {
+		return mapper.map(pubTagRepository.findByWinePubs(), PubTagDTO.class);
+	}
+
+	@Override
+	public List<PubTagDTO> getCoffeePubTags() {
+		return mapper.map(pubTagRepository.findByCoffeePubs(), PubTagDTO.class);
 	}
 
 }

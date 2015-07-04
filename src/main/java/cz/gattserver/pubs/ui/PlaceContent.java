@@ -7,6 +7,7 @@ import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.tepi.filtertable.FilterTable;
+import org.vaadin.teemu.ratingstars.RatingStars;
 import org.vaadin.tokenfield.TokenField;
 
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -72,15 +73,15 @@ public abstract class PlaceContent extends Content {
 
 	protected abstract String getContentPath();
 
-	protected abstract String getNoPhotoPath();
+	protected abstract String getSectionPath();
 
-	protected abstract String getRankPhotoPath();
-	protected abstract String getRankSmallPhotoPath();
-	
 	protected abstract String createNewItemCaption();
-	
+
 	protected abstract String modifyItemCaption();
-	
+
+	protected abstract CreatePubWindow openCreatePubWindow(PubDTO pubDTO,
+			CreatePubWindow.OnCreationListener onCreationListener);
+
 	private void populateContainer() {
 		container = new BeanContainer<Long, PubDTO>(PubDTO.class);
 		container.setBeanIdProperty("id");
@@ -109,7 +110,7 @@ public abstract class PlaceContent extends Content {
 					@SuppressWarnings("unchecked")
 					BeanItem<PubDTO> item = (BeanItem<PubDTO>) table.getItem(table.getValue());
 					showPubDetail(item.getBean());
-					layoutPage.getWebRequest().updateURL(getContentPath() + "/" + item.getBean().getName());
+					layoutPage.getWebRequest().updateURL(getSectionPath(), getContentPath(), item.getBean().getName());
 				}
 				if (editBtn != null)
 					editBtn.setEnabled(selected);
@@ -133,7 +134,7 @@ public abstract class PlaceContent extends Content {
 
 		Embedded pubImage;
 		if (p.getImage() == null) {
-			pubImage = new Embedded(null, new ThemeResource(getNoPhotoPath()));
+			pubImage = new Embedded(null, new ThemeResource("img/no_foto.png"));
 		} else {
 			pubImage = new Embedded(null, new StreamResource(new StreamSource() {
 				private static final long serialVersionUID = 414452413648278444L;
@@ -162,10 +163,11 @@ public abstract class PlaceContent extends Content {
 		nameLabel.setHeight("25px");
 		rankLayout.addComponent(nameLabel);
 
-		for (int i = 0; i < p.getRank(); i++) {
-			Embedded rankStar = new Embedded(null, new ThemeResource(getRankPhotoPath()));
-			rankLayout.addComponent(rankStar);
-		}
+		RatingStars ratingStars = new RatingStars();
+		ratingStars.setAnimated(false);
+		ratingStars.setEnabled(false);
+		ratingStars.setValue((double) (p.getRank()));
+		rankLayout.addComponent(ratingStars);
 
 		Link addressLink = new Link(p.getAddress(), new ExternalResource(MAPS_QUERY_PREFIX + p.getAddress()));
 		addressLink.setTargetName("_blank");
@@ -301,15 +303,13 @@ public abstract class PlaceContent extends Content {
 				BeanItem<PubDTO> item = (BeanItem<PubDTO>) table.getItem(itemId);
 				PubDTO p = item.getBean();
 
-				HorizontalLayout rankLayout = new HorizontalLayout();
-				rankLayout.setSpacing(true);
+				RatingStars ratingStars = new RatingStars();
+				ratingStars.setAnimated(false);
+				ratingStars.setStyleName("tiny");
+				ratingStars.setEnabled(false);
+				ratingStars.setValue((double) (p.getRank()));
 
-				for (int i = 0; i < p.getRank(); i++) {
-					Embedded rankStar = new Embedded(null, new ThemeResource(getRankSmallPhotoPath()));
-					rankLayout.addComponent(rankStar);
-				}
-
-				return rankLayout;
+				return ratingStars;
 			}
 		});
 
@@ -336,16 +336,14 @@ public abstract class PlaceContent extends Content {
 
 				@Override
 				public void buttonClick(ClickEvent event) {
-					getUI().addWindow(new CreatePubWindow() {
-						private static final long serialVersionUID = -7533537841540613862L;
-
+					getUI().addWindow(openCreatePubWindow(new PubDTO(), new CreatePubWindow.OnCreationListener() {
 						@Override
-						protected void onCreation(Long id) {
+						public void onCreation(Long id) {
 							PubDTO newPub = pubFacade.getById(id);
 							container.addBean(newPub);
 							sortTable();
 						}
-					});
+					}));
 				}
 			});
 			createBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/tags/plus_16.png"));
@@ -359,17 +357,15 @@ public abstract class PlaceContent extends Content {
 					@SuppressWarnings("unchecked")
 					BeanItem<PubDTO> beanItem = (BeanItem<PubDTO>) table.getItem(table.getValue());
 					PubDTO item = beanItem.getBean();
-					getUI().addWindow(new CreatePubWindow(item) {
-						private static final long serialVersionUID = -7533537841540613862L;
-
+					getUI().addWindow(openCreatePubWindow(item, new CreatePubWindow.OnCreationListener() {
 						@Override
-						protected void onCreation(Long id) {
+						public void onCreation(Long id) {
 							PubDTO newPub = pubFacade.getById(id);
 							populateContainer();
 							showPubDetail(newPub);
 							sortTable();
 						}
-					});
+					}));
 				}
 			});
 			editBtn.setIcon((com.vaadin.server.Resource) new ThemeResource("img/tags/pencil_16.png"));

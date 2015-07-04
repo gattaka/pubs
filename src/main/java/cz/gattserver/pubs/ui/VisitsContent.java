@@ -23,6 +23,7 @@ import cz.gattserver.pubs.facades.SecurityFacade;
 import cz.gattserver.pubs.facades.VisitFacade;
 import cz.gattserver.pubs.model.dto.VisitDTO;
 import cz.gattserver.pubs.subwindows.CreateVisitWindow;
+import cz.gattserver.pubs.ui.beer.BeerPubsContent;
 import cz.gattserver.pubs.util.StringToDateConverter;
 
 public class VisitsContent extends Content {
@@ -48,7 +49,7 @@ public class VisitsContent extends Content {
 
 	private ExternalResource createPubLinkResource(VisitDTO visitDTO) {
 		return new ExternalResource(layoutPage.getWebRequest().getPageURL(
-				PubsContent.PATH + "/" + visitDTO.getPub().getName()));
+				BeerPubsContent.PATH + "/" + visitDTO.getPub().getName()));
 	}
 
 	private void refreshVisitsOverview() {
