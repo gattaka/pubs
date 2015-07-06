@@ -1,23 +1,32 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>cz.gattserver</groupId>
 	<artifactId>pubs</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>PUBs</name>
 	<description>Znalostní báze restaurací</description>
+	<parent>
+		<groupId>cz.gattserver</groupId>
+		<artifactId>gattserver-parent</artifactId>
+		<version>1.0.6</version>
+	</parent>
 
 	<properties>
 		<vaadin.version>7.2.1</vaadin.version>
 		<vaadin.plugin.version>${vaadin.version}</vaadin.plugin.version>
-		<widgetset.target>${basedir}/src/main/webapp/VAADIN/widgetsets</widgetset.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<org.springframework.version>4.0.5.RELEASE</org.springframework.version>
 		<org.spring.security.version>3.2.0.RELEASE</org.spring.security.version>
 		<spring-data-jpa.version>1.4.1.RELEASE</spring-data-jpa.version>
 		<hibernate-validator.version>5.1.1.Final</hibernate-validator.version>
 	</properties>
+
+	<scm>
+		<connection>${scm.base.url}/pubs</connection>
+		<developerConnection>${scm.base.url}/pubs</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
 
 	<repositories>
 		<repository>
@@ -54,7 +63,7 @@
 		<dependency>
 			<groupId>cz.gattserver</groupId>
 			<artifactId>web-common</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- Star rating -->
@@ -76,6 +85,21 @@
 	<build>
 		<finalName>${project.artifactId}</finalName>
 		<plugins>
+			<!-- Do WAR se musí přibalit vytvořený VAADIN adresář -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<webResources>
+						<resource>
+							<directory>${basedir}/target/VAADIN</directory>
+							<targetPath>VAADIN</targetPath>
+						</resource>
+					</webResources>
+				</configuration>
+			</plugin>
+			<!-- Používáme Java 1.8 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -84,6 +108,8 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
+			<!-- VAADIN adresář se nesmí během clean fáze mazat, mažeme ho explicitně, 
+				je-li to opravdu potřeba, jinak je widgetset vygenerován jednou a napořád -->
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
 				<configuration>
@@ -100,6 +126,46 @@
 						</fileset>
 					</filesets>
 				</configuration>
+			</plugin>
+			<!-- VAADIN widgetset init je vynechán aby se nemazal adresář widgetsetu, 
+				tak se bude kompilovat opravdu pouze a jenom smaže-li se adresář ručně nebo 
+				při vytváření z release, kdy se stahuje z repozitáře projekt bez target -->
+			<!-- VAADIN widgetset compile -->
+			<plugin>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-maven-plugin</artifactId>
+				<version>${vaadin.plugin.version}</version>
+				<configuration>
+					<extraJvmArgs>-Xmx512M -Xss1024k</extraJvmArgs>
+					<!-- <runTarget>mobilemail</runTarget> -->
+					<!-- We are doing "inplace" but into subdir VAADIN/widgetsets. This 
+						way compatible with Vaadin eclipse plugin. -->
+					<webappDirectory>${basedir}/target/VAADIN/widgetsets</webappDirectory>
+					<hostedWebapp>${basedir}/target/VAADIN/widgetsets
+					</hostedWebapp>
+					<noServer>true</noServer>
+					<!-- Remove draftCompile when project is ready -->
+					<draftCompile>false</draftCompile>
+					<compileReport>true</compileReport>
+					<style>OBF</style>
+					<strict>true</strict>
+					<runTarget>http://localhost:8080/</runTarget>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<configuration>
+							<!-- if you don't specify any modules, the plugin will find them -->
+							<!-- <modules> <module>com.vaadin.demo.mobilemail.gwt.ColorPickerWidgetSet</module> 
+								</modules> -->
+						</configuration>
+						<goals>
+							<goal>resources</goal>
+							<goal>update-widgetset</goal>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 		<pluginManagement>
@@ -123,11 +189,11 @@
 											[7.2.1,)
 										</versionRange>
 										<goals>
-											<goal>resources</goal>
-											<goal>update-widgetset</goal>
+											<goal>
+												update-widgetset
+											</goal>
 											<goal>compile</goal>
-											<goal>update-theme</goal>
-											<goal>compile-theme</goal>
+											<goal>resources</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
@@ -138,84 +204,8 @@
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
-				<plugin>
-					<artifactId>maven-eclipse-plugin</artifactId>
-					<configuration>
-						<wtpversion>2.0</wtpversion>
-						<additionalProjectnatures>
-							<projectnature>com.vaadin.integration.eclipse.widgetsetNature</projectnature>
-						</additionalProjectnatures>
-						<additionalBuildcommands>
-							<buildcommand>com.vaadin.integration.eclipse.widgetsetBuilder</buildcommand>
-							<buildcommand>com.vaadin.integration.eclipse.addonStylesBuilder</buildcommand>
-						</additionalBuildcommands>
-					</configuration>
-				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>gwt</id>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<version>1.7</version>
-						<executions>
-							<execution>
-								<phase>initialize</phase>
-								<configuration>
-									<target>
-										<delete dir="${basedir}/target/VAADIN" />
-									</target>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>com.vaadin</groupId>
-						<artifactId>vaadin-maven-plugin</artifactId>
-						<version>${vaadin.plugin.version}</version>
-						<configuration>
-							<extraJvmArgs>-Xmx512M -Xss1024k</extraJvmArgs>
-							<!-- <runTarget>mobilemail</runTarget> -->
-							<!-- We are doing "inplace" but into subdir VAADIN/widgetsets. This 
-								way compatible with Vaadin eclipse plugin. -->
-							<webappDirectory>${basedir}/target/VAADIN/widgetsets</webappDirectory>
-							<hostedWebapp>${basedir}/target/VAADIN/widgetsets
-							</hostedWebapp>
-							<noServer>true</noServer>
-							<!-- Remove draftCompile when project is ready -->
-							<draftCompile>false</draftCompile>
-							<compileReport>true</compileReport>
-							<style>OBF</style>
-							<strict>true</strict>
-							<runTarget>http://localhost:8080/</runTarget>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>compile</phase>
-								<configuration>
-									<!-- if you don't specify any modules, the plugin will find them -->
-									<!-- <modules> <module>com.vaadin.demo.mobilemail.gwt.ColorPickerWidgetSet</module> 
-										</modules> -->
-								</configuration>
-								<goals>
-									<goal>resources</goal>
-									<goal>update-widgetset</goal>
-									<goal>compile</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 
 </project>
